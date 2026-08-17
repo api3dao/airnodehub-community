@@ -1982,7 +1982,7 @@ main {
 .catalog-columns,
 .catalog-row {
   display: grid;
-  grid-template-columns: minmax(210px, 2fr) 80px 96px minmax(95px, 0.8fr) 74px;
+  grid-template-columns: minmax(210px, 2fr) 80px 96px minmax(95px, 0.8fr);
   gap: 12px;
   align-items: center;
 }
@@ -2956,7 +2956,6 @@ footer {
   }
 
   .catalog-columns span:nth-child(3),
-  .catalog-columns span:nth-child(5),
   .catalog-row .catalog-cell {
     display: none;
   }

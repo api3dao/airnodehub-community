@@ -6,7 +6,6 @@ export interface CatalogProject {
   status: ProjectStatus;
   category: string;
   listings: readonly string[];
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   artifact: string;
   problem: string;
   outcome: string;
@@ -21,7 +20,6 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     status: 'working',
     category: 'Agent safety',
     listings: ['Nodary', 'CoinGecko', 'TickerLayer'],
-    difficulty: 'Intermediate',
     artifact: 'Runnable browser demo',
     problem:
       'Agents often accept API output without checking who returned it or whether the response changed.',
@@ -37,7 +35,6 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     status: 'working',
     category: 'Market data',
     listings: ['Nodary', 'CoinGecko', 'TickerLayer'],
-    difficulty: 'Intermediate',
     artifact: 'Runnable comparison dashboard',
     problem:
       'Comparing prices usually removes the provenance of each underlying value.',
@@ -52,7 +49,6 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     status: 'working',
     category: 'Public data',
     listings: ['NASA EONET', 'USGS', 'GeoDB'],
-    difficulty: 'Advanced',
     artifact: 'Runnable evidence map',
     problem:
       'Emergency maps often combine changing sources without preserving the inputs behind each alert.',
@@ -67,7 +63,6 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     status: 'working',
     category: 'Data history',
     listings: ['Wikidata', 'Eurostat', 'ECB'],
-    difficulty: 'Intermediate',
     artifact: 'Signed before-and-after record',
     problem:
       'APIs overwrite changing public data, leaving applications without proof of what was returned before.',

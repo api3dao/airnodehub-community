@@ -5,7 +5,6 @@ This project contains the shared static browser app for [AirnodeHub Community](.
 **Status:** Working  
 **Category:** Agent safety  
 **Airnode listings:** Nodary, CoinGecko, TickerLayer  
-**Difficulty:** Intermediate  
 **Artifact:** Runnable browser demo
 
 ## Problem

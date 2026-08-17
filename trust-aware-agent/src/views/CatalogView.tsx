@@ -35,7 +35,6 @@ export function CatalogView() {
             <span>Status</span>
             <span>Category</span>
             <span>Airnode listings</span>
-            <span>Level</span>
           </div>
 
           {CATALOG_PROJECTS.map((project) => (
@@ -56,7 +55,6 @@ export function CatalogView() {
                   {project.listings[0]}
                   {project.listings.length > 1 && <small>+{project.listings.length - 1}</small>}
                 </span>
-                <span className="catalog-cell" data-label="Level">{project.difficulty}</span>
               </button>
               <div className="catalog-mobile-action">
                 <code>{project.repoPath}</code>
@@ -111,7 +109,6 @@ export function CatalogView() {
         <dl>
           <div><dt>Category</dt><dd>{selected.category}</dd></div>
           <div><dt>Artifact</dt><dd>{selected.artifact}</dd></div>
-          <div><dt>Difficulty</dt><dd>{selected.difficulty}</dd></div>
           <div className="inspector-listings">
             <dt>Airnode listings</dt>
             <dd>{selected.listings.map((listing) => <span key={listing}>{listing}</span>)}</dd>
