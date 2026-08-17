@@ -10,12 +10,12 @@ This repository intentionally has no application backend. The static Vite app ca
 
 ## Use-case catalog
 
-| Use case | Outcome | Category | Airnode listings | Difficulty | Status |
-|---|---|---|---|---|---|
-| [Trust-Aware Agent](trust-aware-agent/) | Accept ETH/USD only after signer, request, freshness, and derived-price checks pass. | Agent safety | Nodary, CoinGecko, TickerLayer | Intermediate | **Working** |
-| [Market Integrity Monitor](use-cases/market-integrity-monitor/README.md) | Compare signed prices without losing the receipt behind each value. | Market data | Nodary, CoinGecko, TickerLayer | Intermediate | **Working** |
-| [Disaster Evidence Map](use-cases/disaster-evidence-map/README.md) | Attach signed event and location inputs to every marker and alert. | Public data | NASA EONET, USGS, GeoDB | Advanced | **Working** |
-| [Verified Change Tracker](use-cases/revision-witness/README.md) | Compare the same live API request over time and retain both signed responses behind every change. | Data history | Wikidata | Intermediate | **Working** |
+| Use case | Outcome | Category | Airnode listings | Status |
+|---|---|---|---|---|
+| [Trust-Aware Agent](use-cases/trust-aware-agent/README.md) | Accept ETH/USD only after signer, request, freshness, and derived-price checks pass. | Agent safety | Nodary, CoinGecko, TickerLayer | **Working** |
+| [Market Integrity Monitor](use-cases/market-integrity-monitor/README.md) | Compare signed prices without losing the receipt behind each value. | Market data | Nodary, CoinGecko, TickerLayer | **Working** |
+| [Disaster Evidence Map](use-cases/disaster-evidence-map/README.md) | Attach signed event and location inputs to every marker and alert. | Public data | NASA EONET, USGS, GeoDB | **Working** |
+| [Verified Change Tracker](use-cases/revision-witness/README.md) | Compare the same live API request over time and retain both signed responses behind every change. | Data history | Wikidata | **Working** |
 
 All four catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
 
@@ -39,7 +39,7 @@ Every finished project should make five stages visible:
 
 An attestation proves provenance—who returned which bytes for which request and when. It does not, by itself, guarantee that the underlying real-world claim is true.
 
-Browse the complete [use-case index](use-cases/README.md), inspect the proven [building blocks](building-blocks/README.md), start the [browser app](trust-aware-agent/README.md), or read the [contribution guide](CONTRIBUTING.md).
+Browse the complete [use-case index](use-cases/README.md), inspect the proven [building blocks](building-blocks/README.md), start with the [Trust-Aware Agent](use-cases/trust-aware-agent/README.md), or read the [contribution guide](CONTRIBUTING.md).
 
 ## References
 

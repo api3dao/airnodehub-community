@@ -1,6 +1,6 @@
 # Trust-Aware Agent · Community Project 01
 
-This project contains the shared static browser app for [AirnodeHub Community](../README.md), an unofficial collection of frontend-only API demonstrations. The Trust-Aware Agent is Project 01; the same app now routes to all four working use cases.
+This project runs in the shared static browser app for [AirnodeHub Community](../../README.md), an unofficial collection of frontend-only API demonstrations.
 
 **Status:** Working  
 **Category:** Agent safety  
@@ -36,6 +36,7 @@ An attestation proves that a signer returned specific bytes for a specific reque
 Requires Node.js 22+.
 
 ```bash
+cd trust-aware-agent
 npm install
 npm run dev
 ```
@@ -58,7 +59,7 @@ The catalog links to these runnable routes:
 ## Agent-facing API
 
 ```ts
-import { trustedFetch } from './src/lib';
+import { trustedFetch } from '../../trust-aware-agent/src/lib';
 
 const result = await trustedFetch({
   intent: 'current USD price of ETH',
@@ -76,7 +77,7 @@ console.log(result.decision);
 console.log(result.receipt);
 ```
 
-The framework-neutral tool contract is in [`examples/agent-tool.json`](examples/agent-tool.json). This repository only demonstrates the contract in the browser; it does not run an MCP or agent backend.
+The framework-neutral tool contract is in [`examples/agent-tool.json`](../../trust-aware-agent/examples/agent-tool.json). This repository only demonstrates the contract in the browser; it does not run an MCP or agent backend.
 
 ## What happens on every call
 
@@ -130,7 +131,7 @@ Deferred until the vertical slice is proven:
 - MCP and framework-specific adapters;
 - server-side polling and webhooks, which are outside this frontend demonstration repository.
 
-The other three working demos reuse the generic live-contract and local-verification layer for price consensus, disaster evidence, and data-revision history. See the shared [project backlog](../IDEAS.md) and [contribution guide](../CONTRIBUTING.md).
+The other three working demos reuse the generic live-contract and local-verification layer for price consensus, disaster evidence, and data-revision history. See the shared [project backlog](../../IDEAS.md) and [contribution guide](../../CONTRIBUTING.md).
 
 ## References
 

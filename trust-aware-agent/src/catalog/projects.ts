@@ -27,7 +27,7 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
       'Accept an ETH/USD value only after its signer, request, freshness, and derived price pass every check.',
     trustPattern:
       'Resolve → source policy → direct call → local verification → portable record',
-    repoPath: 'trust-aware-agent/README.md',
+    repoPath: 'use-cases/trust-aware-agent/README.md',
   },
   {
     slug: 'market-integrity-monitor',

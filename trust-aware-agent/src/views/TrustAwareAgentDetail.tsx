@@ -166,7 +166,7 @@ export function TrustAwareAgentDetail() {
         <a href="#live-demo">Live demo</a>
         <a href="#code">Code</a>
         <a href="./#contribute">Contribute</a>
-        <code>trust-aware-agent/README.md</code>
+        <code>use-cases/trust-aware-agent/README.md</code>
       </nav>
 
       <section className="project-overview" id="overview" aria-labelledby="overview-title">

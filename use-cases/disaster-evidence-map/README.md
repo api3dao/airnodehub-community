@@ -2,7 +2,6 @@
 
 **Status:** Working  
 **Category:** Public data  
-**Difficulty:** Advanced  
 **Artifact:** Interactive map
 
 ## Problem

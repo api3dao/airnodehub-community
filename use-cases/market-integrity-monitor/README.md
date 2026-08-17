@@ -2,7 +2,6 @@
 
 **Status:** Working  
 **Category:** Market data  
-**Difficulty:** Intermediate  
 **Artifact:** Multi-source dashboard
 
 ## Problem

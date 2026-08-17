@@ -2,7 +2,6 @@
 
 **Status:** Working  
 **Category:** Data history  
-**Difficulty:** Intermediate  
 **Artifact:** Signed before-and-after record
 
 ## Problem
