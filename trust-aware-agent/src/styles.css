@@ -4897,7 +4897,7 @@ summary:focus-visible {
 
 .site-header {
   min-height: 58px;
-  padding-inline: max(24px, calc((100% - 1120px) / 2));
+  padding-inline: max(24px, calc((100% - 1280px) / 2));
   background: #e9ede7;
   border-bottom: 0;
   box-shadow: inset 0 -1px rgba(38, 55, 43, 0.1);
