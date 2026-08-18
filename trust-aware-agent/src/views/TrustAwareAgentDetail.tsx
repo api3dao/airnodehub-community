@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { CandidateGrid } from '../components/CandidateGrid';
 import { DecisionTape } from '../components/DecisionTape';
 import { ProofPanel } from '../components/ProofPanel';
+import { AgentPromptCallout } from '../components/ProjectDetailFrame';
 import {
   DEFAULT_POLICY,
   TrustedFetchError,
@@ -21,17 +22,6 @@ import type {
 
 const DEFAULT_INTENT =
   'Get the current USD price of ETH from the strongest available source.';
-
-const SDK_EXAMPLE = `const result = await trustedFetch({
-  intent: "current USD price of ETH",
-  policy: {
-    preferFirstParty: true,
-    maxAttestationAgeSeconds: 60,
-    allowPaidCalls: false,
-  },
-});
-
-if (!result.trust.valid) throw new Error("Untrusted input");`;
 
 function Toggle({
   checked,
@@ -71,19 +61,6 @@ export function TrustAwareAgentDetail() {
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
   const [tampered, setTampered] = useState(false);
-  const [promptStatus, setPromptStatus] = useState('');
-
-  async function copyAgentPrompt() {
-    try {
-      const response = await fetch('/agent-prompt.md');
-      if (!response.ok) throw new Error('Prompt unavailable');
-      await navigator.clipboard.writeText(await response.text());
-      setPromptStatus('Copied');
-    } catch {
-      setPromptStatus('Open the raw prompt to copy it');
-    }
-  }
-
   async function runAgent(event: FormEvent) {
     event.preventDefault();
     setRunning(true);
@@ -335,47 +312,11 @@ export function TrustAwareAgentDetail() {
         <CandidateGrid decisions={decisions} mode={discoveryMode} />
       )}
 
-      <section className="integration-section" id="code">
-        <div className="integration-copy">
-          <span>Reusable code</span>
-          <h2>Use the verification core in your own agent.</h2>
-          <p>
-            <code>trustedFetch()</code> runs the same flow: it finds a source,
-            calls it, checks the signature locally, and returns the value with
-            downloadable proof.
-          </p>
-          <ul>
-            <li>Use the verified value in any agent framework</li>
-            <li>Recheck the saved proof without calling an API</li>
-            <li>No API key or automatic spending in this demo</li>
-          </ul>
-        </div>
-        <div className="code-window">
-          <div>
-            <span>agent.ts</span>
-            <span>trusted input</span>
-          </div>
-          <pre><code>{SDK_EXAMPLE}</code></pre>
-        </div>
-      </section>
-
-      <section className="agent-prompt-callout" id="agent-prompt" aria-labelledby="agent-prompt-title">
-        <div>
-          <span>For AI agents</span>
-          <h2 id="agent-prompt-title">Give your agent a trust policy, not just an endpoint.</h2>
-          <p>
-            The ready-to-use prompt tells an agent how to discover, call, and verify
-            AirnodeHub data without confusing provenance with truth.
-          </p>
-        </div>
-        <div className="agent-prompt-actions">
-          <button className="primary-action" onClick={copyAgentPrompt} type="button">
-            {promptStatus === 'Copied' ? 'Prompt copied' : 'Copy agent prompt'}
-          </button>
-          <a href="/agent-prompt.md" target="_blank" rel="noreferrer">View raw prompt</a>
-          <small aria-live="polite">{promptStatus}</small>
-        </div>
-      </section>
+      <AgentPromptCallout
+        path="/prompts/trust-aware-agent.md"
+        title="Give your agent a trust policy, not just an endpoint."
+        description="Use this prompt to make an agent discover, call, and verify an AirnodeHub source before consuming its answer."
+      />
     </main>
   );
 }

@@ -237,6 +237,11 @@ export function DisasterEvidenceMapDetail() {
       problem="Emergency maps often lose the exact source responses that produced a marker or alert."
       outcome="A Tokyo watch area combines independently verified event, earthquake, and city inputs."
       boundary="These relay signatures prove returned bytes and timing. They do not prove that an event happened in the physical world."
+      prompt={{
+        path: '/prompts/disaster-evidence-map.md',
+        title: 'Ask an agent to build an alert from signed public data.',
+        description: 'This prompt combines verified event, earthquake, and city responses while keeping the receipt behind every marker and alert.',
+      }}
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="disaster-demo-title">
         <h2 id="disaster-demo-title">Tokyo watch area</h2>

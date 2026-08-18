@@ -1,4 +1,44 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+
+export function AgentPromptCallout({
+  path,
+  title,
+  description,
+}: {
+  path: string;
+  title: string;
+  description: string;
+}) {
+  const [status, setStatus] = useState('');
+
+  async function copyPrompt() {
+    try {
+      const response = await fetch(path);
+      if (!response.ok) throw new Error('Prompt unavailable');
+      await navigator.clipboard.writeText(await response.text());
+      setStatus('Copied');
+    } catch {
+      setStatus('Open the raw prompt to copy it');
+    }
+  }
+
+  return (
+    <section className="agent-prompt-callout" id="agent-prompt" aria-labelledby="agent-prompt-title">
+      <div>
+        <span>For AI agents</span>
+        <h2 id="agent-prompt-title">{title}</h2>
+        <p>{description}</p>
+      </div>
+      <div className="agent-prompt-actions">
+        <button className="primary-action" onClick={copyPrompt} type="button">
+          {status === 'Copied' ? 'Prompt copied' : 'Copy agent prompt'}
+        </button>
+        <a href={path} target="_blank" rel="noreferrer">View raw prompt</a>
+        <small aria-live="polite">{status}</small>
+      </div>
+    </section>
+  );
+}
 
 export function ProjectDetailFrame({
   title,
@@ -10,6 +50,7 @@ export function ProjectDetailFrame({
   problem,
   outcome,
   boundary,
+  prompt,
   children,
 }: {
   title: string;
@@ -21,6 +62,7 @@ export function ProjectDetailFrame({
   problem: string;
   outcome: string;
   boundary: string;
+  prompt: { path: string; title: string; description: string };
   children: ReactNode;
 }) {
   return (
@@ -51,6 +93,7 @@ export function ProjectDetailFrame({
         <a href="#overview">Overview</a>
         <a href="#live-demo">Live demo</a>
         <a href="#evidence">Evidence</a>
+        <a href="#agent-prompt">Agent prompt</a>
         <a href="./#contribute">Contribute</a>
         <code>{repoPath}</code>
       </nav>
@@ -65,6 +108,7 @@ export function ProjectDetailFrame({
       </section>
 
       {children}
+      <AgentPromptCallout {...prompt} />
     </main>
   );
 }

@@ -123,6 +123,11 @@ export function RevisionWitnessDetail() {
       problem="Changing APIs usually expose only the current value, so applications lose proof of what the source returned before."
       outcome="The first verified response becomes the before state. Every later response becomes an auditable after state with a field-level diff."
       boundary="A relay attestation proves what was returned at capture time; it does not certify Wikidata as correct."
+      prompt={{
+        path: '/prompts/revision-witness.md',
+        title: 'Ask an agent to preserve a signed before-and-after record.',
+        description: 'This prompt repeats one Wikidata request over time and reports changes only from locally verified snapshots.',
+      }}
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="revision-demo-title">
         <h2 id="revision-demo-title">Track a live Wikidata record</h2>
