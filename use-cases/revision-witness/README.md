@@ -33,8 +33,8 @@ Live call → signed baseline → repeat call → verified field-level diff.
 
 ```sh
 cd trust-aware-agent
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open `http://localhost:5173/?project=revision-witness`.

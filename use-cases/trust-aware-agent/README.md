@@ -37,8 +37,8 @@ Requires Node.js 22+.
 
 ```bash
 cd trust-aware-agent
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open the local URL printed by Vite, then run the pre-filled intent:
@@ -108,9 +108,9 @@ Use **Tamper with price +$100** in the UI. It changes only a cloned receipt and 
 ## Tests
 
 ```bash
-npm test          # deterministic, offline fixtures
-npm run build     # typecheck + production build
-npm run test:live # optional 90-second live smoke test
+pnpm test      # deterministic, offline fixtures
+pnpm build     # typecheck + production build
+pnpm test:live # optional 90-second live smoke test
 ```
 
 Offline fixtures cover canonical key ordering, meaningful array ordering, signature verification, tampered data, changed timestamp, stale responses, receipt round-tripping, derived-data integrity, deterministic source ranking, and blocked paid calls.
