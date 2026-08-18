@@ -1,0 +1,35 @@
+{
+  "name": "trusted_fetch",
+  "description": "Discover, call, and locally verify external data through AirnodeHub. Use when an agent needs current ETH/USD data with explicit provenance, freshness, signer, payment policy, and a portable evidence receipt.",
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["intent"],
+    "properties": {
+      "intent": {
+        "type": "string",
+        "description": "The external data needed, in plain language. This MVP supports the current USD price of ETH."
+      },
+      "policy": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "preferFirstParty": {
+            "type": "boolean",
+            "default": true
+          },
+          "maxAttestationAgeSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 60
+          },
+          "allowPaidCalls": {
+            "type": "boolean",
+            "default": false,
+            "description": "This demo never creates or signs a payment authorization."
+          }
+        }
+      }
+    }
+  }
+}

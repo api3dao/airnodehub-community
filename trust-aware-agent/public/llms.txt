@@ -1,0 +1,28 @@
+# AirnodeHub Community
+
+> An unofficial catalog of runnable, frontend-only AirnodeHub use cases that discover APIs, verify signed responses locally, and preserve portable receipts for AI agents and human reviewers.
+
+All demonstrations run in the browser without a proxy, database, account, or private API key. They use live AirnodeHub operations and expose the request, response, signer, verification result, and derived output.
+
+An Airnode attestation proves which signer returned specific bytes for a specific request at a specific time. It does not prove that the underlying real-world claim is objectively true. First-party provider provenance and third-party relay provenance must remain visibly distinct.
+
+## Working use cases
+
+- [Trust-Aware Agent](https://airnodehub-community-preview.pages.dev/?project=trust-aware-agent): Select, call, and verify an ETH/USD source before releasing its value to an AI agent.
+- [Market Integrity Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Compare signed ETH/USD prices without losing the receipt behind each source.
+- [Disaster Evidence Map](https://airnodehub-community-preview.pages.dev/?project=disaster-evidence-map): Attach signed event and location inputs to map markers and alerts.
+- [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare the same API request over time and preserve both signed responses behind every change.
+
+## Project resources
+
+- [Source repository](https://github.com/api3dao/airnodehub-community): Application code, use-case briefs, verification utilities, fixtures, and contribution guidance.
+- [Use-case briefs](https://github.com/api3dao/airnodehub-community/tree/main/use-cases): Problem statements, trust boundaries, implemented flows, and acceptance criteria.
+- [Official AirnodeHub catalog](https://airnodehub.api3.org/llms.txt): Available Airnode listings and consumer interface.
+- [Full AirnodeHub operation catalog](https://airnodehub.api3.org/llms-full.txt): Complete live operation inventory.
+- [Consumer documentation](https://airnodehub-docs.api3.org/api-consumers/): Resolve, inspect, call, and verify flow.
+- [Attestation documentation](https://airnodehub-docs.api3.org/airnode/attestation): EIP-191 signing and local verification details.
+
+## Optional
+
+- [Contribution guide](https://github.com/api3dao/airnodehub-community/blob/main/CONTRIBUTING.md): How to add a focused, testable community use case.
+- [Project ideas](https://github.com/api3dao/airnodehub-community/blob/main/IDEAS.md): Candidate demonstrations and reusable building blocks.
