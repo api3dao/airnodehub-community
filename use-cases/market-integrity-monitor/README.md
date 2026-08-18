@@ -35,8 +35,8 @@ Parallel calls → local verification → deviation check → evidence bundle.
 
 ```sh
 cd trust-aware-agent
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open `http://localhost:5173/?project=market-integrity-monitor`.

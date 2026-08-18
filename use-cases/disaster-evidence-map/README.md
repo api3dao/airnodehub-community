@@ -41,8 +41,8 @@ The interactive map uses React Leaflet 5 with Leaflet 1.9.4 and OpenStreetMap ti
 
 ```sh
 cd trust-aware-agent
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open `http://localhost:5173/?project=disaster-evidence-map`.
