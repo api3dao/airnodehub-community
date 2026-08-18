@@ -116,9 +116,6 @@ export function RevisionWitnessDetail() {
     <ProjectDetailFrame
       title="Verified Change Tracker"
       tagline="Compare the same API response over time and keep signed evidence of what changed."
-      category="Data history"
-      listings="Wikidata"
-      runtime="Browser-only"
       problem="Changing APIs usually expose only the current value, so applications lose proof of what the source returned before."
       outcome="The first verified response becomes the before state. Every later response becomes an auditable after state with a field-level diff."
       boundary="A relay attestation proves what was returned at capture time; it does not certify Wikidata as correct."

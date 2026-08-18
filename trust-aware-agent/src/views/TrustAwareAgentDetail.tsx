@@ -142,12 +142,6 @@ export function TrustAwareAgentDetail() {
             value.
           </p>
         </div>
-        <dl>
-          <div><dt>Category</dt><dd>Agent safety</dd></div>
-          <div><dt>Listings</dt><dd>Nodary +2</dd></div>
-          <div><dt>Runtime</dt><dd>Browser-only</dd></div>
-          <div><dt>API key</dt><dd>Not required</dd></div>
-        </dl>
       </header>
 
       <section className="project-overview" id="overview" aria-labelledby="overview-title">

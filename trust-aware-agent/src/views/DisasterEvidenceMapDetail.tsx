@@ -230,9 +230,6 @@ export function DisasterEvidenceMapDetail() {
     <ProjectDetailFrame
       title="Disaster Evidence Map"
       tagline="Turn changing event feeds into alerts that keep the signed evidence behind every marker."
-      category="Public data"
-      listings="NASA +2"
-      runtime="Browser-only"
       problem="Emergency maps often lose the exact source responses that produced a marker or alert."
       outcome="A Tokyo watch area combines independently verified event, earthquake, and city inputs."
       boundary="These relay signatures prove returned bytes and timing. They do not prove that an event happened in the physical world."

@@ -143,9 +143,6 @@ export function MarketIntegrityMonitorDetail() {
     <ProjectDetailFrame
       title="Market Integrity Monitor"
       tagline="Compare ETH/USD across signed sources without throwing away the receipt behind each value."
-      category="Market data"
-      listings="Nodary +2"
-      runtime="Browser-only"
       problem="Price dashboards usually normalize values and lose who returned each input."
       outcome="The median and every deviation remain bound to independently verified source receipts."
       boundary="Consensus reduces single-source risk; it does not make a market price objectively true."

@@ -43,9 +43,6 @@ export function AgentPromptCallout({
 export function ProjectDetailFrame({
   title,
   tagline,
-  category,
-  listings,
-  runtime,
   problem,
   outcome,
   boundary,
@@ -54,9 +51,6 @@ export function ProjectDetailFrame({
 }: {
   title: string;
   tagline: string;
-  category: string;
-  listings: string;
-  runtime: string;
   problem: string;
   outcome: string;
   boundary: string;
@@ -79,12 +73,6 @@ export function ProjectDetailFrame({
           <h1>{title}</h1>
           <p>{tagline}</p>
         </div>
-        <dl>
-          <div><dt>Category</dt><dd>{category}</dd></div>
-          <div><dt>Listings</dt><dd>{listings}</dd></div>
-          <div><dt>Runtime</dt><dd>{runtime}</dd></div>
-          <div><dt>API key</dt><dd>Not required</dd></div>
-        </dl>
       </header>
 
       <section className="project-overview" id="overview" aria-labelledby={`${title}-overview`}>
