@@ -71,6 +71,18 @@ export function TrustAwareAgentDetail() {
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
   const [tampered, setTampered] = useState(false);
+  const [promptStatus, setPromptStatus] = useState('');
+
+  async function copyAgentPrompt() {
+    try {
+      const response = await fetch('/agent-prompt.md');
+      if (!response.ok) throw new Error('Prompt unavailable');
+      await navigator.clipboard.writeText(await response.text());
+      setPromptStatus('Copied');
+    } catch {
+      setPromptStatus('Open the raw prompt to copy it');
+    }
+  }
 
   async function runAgent(event: FormEvent) {
     event.preventDefault();
@@ -164,7 +176,7 @@ export function TrustAwareAgentDetail() {
       <nav className="project-tabs" aria-label="Project sections">
         <a href="#overview">Overview</a>
         <a href="#live-demo">Live demo</a>
-        <a href="#code">Code</a>
+        <a href="#agent-prompt">Agent prompt</a>
         <a href="./#contribute">Contribute</a>
         <code>use-cases/trust-aware-agent/README.md</code>
       </nav>
@@ -344,6 +356,24 @@ export function TrustAwareAgentDetail() {
             <span>trusted input</span>
           </div>
           <pre><code>{SDK_EXAMPLE}</code></pre>
+        </div>
+      </section>
+
+      <section className="agent-prompt-callout" id="agent-prompt" aria-labelledby="agent-prompt-title">
+        <div>
+          <span>For AI agents</span>
+          <h2 id="agent-prompt-title">Give your agent a trust policy, not just an endpoint.</h2>
+          <p>
+            The ready-to-use prompt tells an agent how to discover, call, and verify
+            AirnodeHub data without confusing provenance with truth.
+          </p>
+        </div>
+        <div className="agent-prompt-actions">
+          <button className="primary-action" onClick={copyAgentPrompt} type="button">
+            {promptStatus === 'Copied' ? 'Prompt copied' : 'Copy agent prompt'}
+          </button>
+          <a href="/agent-prompt.md" target="_blank" rel="noreferrer">View raw prompt</a>
+          <small aria-live="polite">{promptStatus}</small>
         </div>
       </section>
     </main>

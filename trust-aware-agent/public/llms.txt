@@ -15,6 +15,7 @@ An Airnode attestation proves which signer returned specific bytes for a specifi
 
 ## Project resources
 
+- [Agent prompt](https://airnodehub-community-preview.pages.dev/agent-prompt.md): Copy-ready instructions for discovering, calling, and locally verifying AirnodeHub data in an AI-agent workflow.
 - [Source repository](https://github.com/api3dao/airnodehub-community): Application code, use-case briefs, verification utilities, fixtures, and contribution guidance.
 - [Use-case briefs](https://github.com/api3dao/airnodehub-community/tree/main/use-cases): Problem statements, trust boundaries, implemented flows, and acceptance criteria.
 - [Official AirnodeHub catalog](https://airnodehub.api3.org/llms.txt): Available Airnode listings and consumer interface.
