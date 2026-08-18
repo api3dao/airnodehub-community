@@ -233,7 +233,6 @@ export function DisasterEvidenceMapDetail() {
       category="Public data"
       listings="NASA +2"
       runtime="Browser-only"
-      repoPath="use-cases/disaster-evidence-map/README.md"
       problem="Emergency maps often lose the exact source responses that produced a marker or alert."
       outcome="A Tokyo watch area combines independently verified event, earthquake, and city inputs."
       boundary="These relay signatures prove returned bytes and timing. They do not prove that an event happened in the physical world."

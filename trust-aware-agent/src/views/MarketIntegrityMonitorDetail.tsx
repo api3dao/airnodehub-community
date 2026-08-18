@@ -146,7 +146,6 @@ export function MarketIntegrityMonitorDetail() {
       category="Market data"
       listings="Nodary +2"
       runtime="Browser-only"
-      repoPath="use-cases/market-integrity-monitor/README.md"
       problem="Price dashboards usually normalize values and lose who returned each input."
       outcome="The median and every deviation remain bound to independently verified source receipts."
       boundary="Consensus reduces single-source risk; it does not make a market price objectively true."

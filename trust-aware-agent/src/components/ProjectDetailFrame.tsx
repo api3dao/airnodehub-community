@@ -46,7 +46,6 @@ export function ProjectDetailFrame({
   category,
   listings,
   runtime,
-  repoPath,
   problem,
   outcome,
   boundary,
@@ -58,7 +57,6 @@ export function ProjectDetailFrame({
   category: string;
   listings: string;
   runtime: string;
-  repoPath: string;
   problem: string;
   outcome: string;
   boundary: string;
@@ -88,15 +86,6 @@ export function ProjectDetailFrame({
           <div><dt>API key</dt><dd>Not required</dd></div>
         </dl>
       </header>
-
-      <nav className="project-tabs" aria-label="Project sections">
-        <a href="#overview">Overview</a>
-        <a href="#live-demo">Live demo</a>
-        <a href="#evidence">Evidence</a>
-        <a href="#agent-prompt">Agent prompt</a>
-        <a href="./#contribute">Contribute</a>
-        <code>{repoPath}</code>
-      </nav>
 
       <section className="project-overview" id="overview" aria-labelledby={`${title}-overview`}>
         <h2 id={`${title}-overview`}>What the receipt changes</h2>

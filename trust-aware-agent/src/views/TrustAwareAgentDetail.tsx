@@ -150,14 +150,6 @@ export function TrustAwareAgentDetail() {
         </dl>
       </header>
 
-      <nav className="project-tabs" aria-label="Project sections">
-        <a href="#overview">Overview</a>
-        <a href="#live-demo">Live demo</a>
-        <a href="#agent-prompt">Agent prompt</a>
-        <a href="./#contribute">Contribute</a>
-        <code>use-cases/trust-aware-agent/README.md</code>
-      </nav>
-
       <section className="project-overview" id="overview" aria-labelledby="overview-title">
         <h2 id="overview-title">What the receipt changes</h2>
         <div>
