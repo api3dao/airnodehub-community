@@ -8,10 +8,10 @@ An Airnode attestation proves which signer returned specific bytes for a specifi
 
 ## Working use cases
 
-- [Trust-Aware Agent](https://airnodehub-community-preview.pages.dev/?project=trust-aware-agent): Select, call, and verify an ETH/USD source before releasing its value to an AI agent.
-- [Market Integrity Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Compare signed ETH/USD prices without losing the receipt behind each source.
-- [Disaster Evidence Map](https://airnodehub-community-preview.pages.dev/?project=disaster-evidence-map): Attach signed event and location inputs to map markers and alerts.
-- [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare the same API request over time and preserve both signed responses behind every change.
+- [Trust-Aware Agent](https://airnodehub-community-preview.pages.dev/?project=trust-aware-agent): Select, call, and verify an ETH/USD source before releasing its value to an AI agent. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/trust-aware-agent.md).
+- [Market Integrity Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Compare signed ETH/USD prices without losing the receipt behind each source. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/market-integrity-monitor.md).
+- [Disaster Evidence Map](https://airnodehub-community-preview.pages.dev/?project=disaster-evidence-map): Attach signed event and location inputs to map markers and alerts. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/disaster-evidence-map.md).
+- [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare the same API request over time and preserve both signed responses behind every change. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/revision-witness.md).
 
 ## Project resources
 

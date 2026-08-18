@@ -143,13 +143,14 @@ export function MarketIntegrityMonitorDetail() {
     <ProjectDetailFrame
       title="Market Integrity Monitor"
       tagline="Compare ETH/USD across signed sources without throwing away the receipt behind each value."
-      category="Market data"
-      listings="Nodary +2"
-      runtime="Browser-only"
-      repoPath="use-cases/market-integrity-monitor/README.md"
       problem="Price dashboards usually normalize values and lose who returned each input."
       outcome="The median and every deviation remain bound to independently verified source receipts."
       boundary="Consensus reduces single-source risk; it does not make a market price objectively true."
+      prompt={{
+        path: '/prompts/market-integrity-monitor.md',
+        title: 'Ask an agent to compare signed market inputs.',
+        description: 'This prompt produces an ETH/USD median with source-level verification, deviation flags, and a portable evidence bundle.',
+      }}
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="market-demo-title">
         <h2 id="market-demo-title">One number, three receipts</h2>
