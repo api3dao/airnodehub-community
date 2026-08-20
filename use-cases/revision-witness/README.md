@@ -32,7 +32,7 @@ Live call → signed baseline → repeat call → verified field-level diff.
 ## Run it
 
 ```sh
-cd trust-aware-agent
+cd site
 pnpm install
 pnpm dev
 ```

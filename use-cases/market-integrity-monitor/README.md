@@ -34,7 +34,7 @@ Parallel calls → local verification → deviation check → evidence bundle.
 ## Run it
 
 ```sh
-cd trust-aware-agent
+cd site
 pnpm install
 pnpm dev
 ```
