@@ -7,9 +7,12 @@ Contributions should be small, runnable, and honest about what an Airnode attest
 - Build one focused demo around a live AirnodeHub operation.
 - Add a frontend-only visualization for a live Airnode operation.
 - Write a narrow browser recipe for discovery, source selection, verification, receipts, or payment policy.
+- Add an agent skill that preserves the same trust and payment boundaries.
 - Improve a working project's tests, fixtures, accessibility, or explanation.
 
 The current backlog is in [IDEAS.md](IDEAS.md). Before implementation, confirm the required operation still appears in the [live catalogue](https://airnodehub.api3.org/llms-full.txt).
+
+Agent skill contributions should follow [`SKILLS.md`](SKILLS.md).
 
 ## Minimum project shape
 

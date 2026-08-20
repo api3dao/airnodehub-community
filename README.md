@@ -25,6 +25,7 @@ All four catalog entries are runnable from the shared browser app. Future ideas 
 - **Browser tools** — discovery, source policy, verification, or receipt handling demonstrated client-side.
 - **API explorations** — focused interfaces that expose the live request, signed response, and derived result.
 - **Recipes** — one reusable move with a fixture and a test.
+- **Agent skills** — focused instructions that help agents discover, call, and verify AirnodeHub data.
 - **Experiments** — small explorations that teach something about signed API data.
 
 ## Shared project contract
@@ -39,7 +40,7 @@ Every finished project should make five stages visible:
 
 An attestation proves provenance—who returned which bytes for which request and when. It does not, by itself, guarantee that the underlying real-world claim is true.
 
-Browse the complete [use-case index](use-cases/README.md), inspect the proven [building blocks](building-blocks/README.md), start with the [Trust-Aware Agent](use-cases/trust-aware-agent/README.md), or read the [contribution guide](CONTRIBUTING.md).
+Browse the complete [use-case index](use-cases/README.md), inspect the proven [building blocks](building-blocks/README.md), see the [skills guide](SKILLS.md), start with the [Trust-Aware Agent](use-cases/trust-aware-agent/README.md), or read the [contribution guide](CONTRIBUTING.md).
 
 ## References
 
