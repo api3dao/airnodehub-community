@@ -36,7 +36,7 @@ An attestation proves that a signer returned specific bytes for a specific reque
 Requires Node.js 22+.
 
 ```bash
-cd trust-aware-agent
+cd site
 pnpm install
 pnpm dev
 ```
@@ -59,7 +59,7 @@ The catalog links to these runnable routes:
 ## Agent-facing API
 
 ```ts
-import { trustedFetch } from '../../trust-aware-agent/src/lib';
+import { trustedFetch } from '../../site/src/lib';
 
 const result = await trustedFetch({
   intent: 'current USD price of ETH',
@@ -77,7 +77,7 @@ console.log(result.decision);
 console.log(result.receipt);
 ```
 
-The framework-neutral tool contract is in [`examples/agent-tool.json`](../../trust-aware-agent/examples/agent-tool.json). This repository only demonstrates the contract in the browser; it does not run an MCP or agent backend.
+The framework-neutral tool contract is in [`examples/agent-tool.json`](../../site/examples/agent-tool.json). This repository only demonstrates the contract in the browser; it does not run an MCP or agent backend.
 
 ## What happens on every call
 

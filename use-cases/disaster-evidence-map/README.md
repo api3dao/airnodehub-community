@@ -40,7 +40,7 @@ The interactive map uses React Leaflet 5 with Leaflet 1.9.4 and OpenStreetMap ti
 ## Run it
 
 ```sh
-cd trust-aware-agent
+cd site
 pnpm install
 pnpm dev
 ```

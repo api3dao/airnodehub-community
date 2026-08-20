@@ -6,7 +6,7 @@ This is an unofficial community workspace. Its projects focus on the part a norm
 
 ## Architecture boundary
 
-This repository intentionally has no application backend. The static Vite app calls public AirnodeHub and Airnode endpoints directly from the browser, performs EIP-191 verification locally, and keeps optional history in browser storage. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Vercel as-is.
+This repository intentionally has no application backend. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser, performs EIP-191 verification locally, and keeps optional history in browser storage. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
 
 ## Use-case catalog
 
