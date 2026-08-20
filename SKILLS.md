@@ -19,7 +19,16 @@ skills/<skill-name>/
 └── scripts/     # optional
 ```
 
-Keep `SKILL.md` concise and include:
+Start every `SKILL.md` with discoverable YAML frontmatter:
+
+```yaml
+---
+name: verify-airnodehub-data
+description: Verify signed AirnodeHub responses before an agent uses external data.
+---
+```
+
+Use a unique lowercase name and make the description say both what the skill does and when an agent should use it. Keep the remaining instructions concise and include:
 
 1. When the skill should be used.
 2. The AirnodeHub operations it relies on.

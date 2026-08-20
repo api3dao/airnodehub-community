@@ -14,9 +14,9 @@ The current backlog is in [IDEAS.md](IDEAS.md). Before implementation, confirm t
 
 Agent skill contributions should follow [`SKILLS.md`](SKILLS.md).
 
-## Minimum project shape
+## Minimum use-case shape
 
-Each standalone project should contain:
+Each standalone use case should contain:
 
 ```text
 project-name/
@@ -37,7 +37,6 @@ Every use case must keep these fields aligned between the web catalog, root proj
 - `Working` or `Planned` status;
 - category;
 - exact Airnode listing names;
-- difficulty;
 - intended artifact;
 - one-sentence problem and outcome;
 - trust pattern;
@@ -45,7 +44,7 @@ Every use case must keep these fields aligned between the web catalog, root proj
 
 Update the UI catalog and README inventory in the same pull request. A Planned brief must not link to a nonexistent runnable demo.
 
-## Acceptance checklist
+## Use-case acceptance checklist
 
 - [ ] The project runs locally from documented commands.
 - [ ] It is a static frontend demonstration with no backend, proxy, database, secret, serverless function, webhook, or worker.

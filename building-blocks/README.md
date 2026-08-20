@@ -9,4 +9,4 @@ Reusable pieces already proven by the first Working project, plus one open adapt
 | Verification record | Available | Save the request, response, signature, policy, and verification result. | `site/src/lib/receipt.ts` |
 | MCP adapter | Wanted | Expose AirnodeHub listings as tools while retaining verification metadata. | [`IDEAS.md`](../IDEAS.md) |
 
-These modules are currently owned by the Trust-Aware Agent project. Move them into a shared package only after a second Working project demonstrates the same boundary.
+These modules currently live inside the shared site. Extract them into a separate package only when a non-site consumer needs the same boundary.
