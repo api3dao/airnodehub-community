@@ -2946,6 +2946,7 @@ footer {
 
   .catalog-project-copy small {
     font-size: 12px;
+    -webkit-line-clamp: 3;
   }
 
   .catalog-mobile-action {
@@ -4712,12 +4713,12 @@ footer {
   }
 
   .market-axis-labels {
-    grid-template-columns: 64px repeat(3, 1fr);
+    grid-template-columns: 72px repeat(3, 1fr);
     font-size: 9px;
   }
 
   .market-source-track {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 72px minmax(0, 1fr);
   }
 
   .market-track-line > b > span {
