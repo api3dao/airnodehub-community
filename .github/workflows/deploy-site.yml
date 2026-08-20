@@ -1,0 +1,53 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: site/.node-version
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        working-directory: site
+        run: pnpm test
+
+      - name: Build
+        working-directory: site
+        run: pnpm build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          packageManager: pnpm
+          workingDirectory: site
+          wranglerVersion: "4"
+          command: pages deploy dist --project-name=airnodehub-community-preview --branch=main

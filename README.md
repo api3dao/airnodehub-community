@@ -8,6 +8,10 @@ This is an unofficial community workspace. Its projects focus on the part a norm
 
 This repository intentionally has no application backend. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser, performs EIP-191 verification locally, and keeps optional history in browser storage. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
 
+## Deployment
+
+Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist` to the `airnodehub-community-preview` Cloudflare Pages project. The workflow requires the repository secret `CLOUDFLARE_API_TOKEN` and repository variable `CLOUDFLARE_ACCOUNT_ID`.
+
 ## Use-case catalog
 
 | Use case | Outcome | Category | Airnode listings | Status |
