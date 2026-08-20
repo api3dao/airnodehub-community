@@ -33,7 +33,7 @@ An attestation proves that a signer returned specific bytes for a specific reque
 
 ## Run it
 
-Requires Node.js 22+.
+Requires Node.js 22.12+.
 
 ```bash
 cd site
