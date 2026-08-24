@@ -21,7 +21,7 @@ const EONET_SPEC: ListingCallSpec = {
   operation: 'getEvents',
   address: '0x84A69892825178Fb1602fb78412E21728efee6a6',
   provenance: 'third-party',
-  parameters: { status: 'open', limit: '8', days: '30' },
+  parameters: { status: 'open', limit: 8, days: 30 },
 };
 
 const USGS_SPEC: ListingCallSpec = {
@@ -31,7 +31,7 @@ const USGS_SPEC: ListingCallSpec = {
   operation: 'queryEvents',
   address: '0x5aF744115e2577513D878D4263Db73b3E77E7630',
   provenance: 'third-party',
-  parameters: { format: 'geojson', minmagnitude: '5.5', limit: '8', orderby: 'magnitude' },
+  parameters: { format: 'geojson', minmagnitude: 5.5, limit: 8, orderby: 'magnitude' },
 };
 
 const GEODB_SPEC: ListingCallSpec = {
@@ -41,7 +41,7 @@ const GEODB_SPEC: ListingCallSpec = {
   operation: 'city',
   address: '0xBeA7EB5366e0260664Ff8d96362588F0313e395F',
   provenance: 'third-party',
-  parameters: { cityId: 'Q1490', languageCode: 'en', asciiMode: 'false' },
+  parameters: { cityId: 'Q1490', languageCode: 'en', asciiMode: false },
 };
 
 interface EonetData {
