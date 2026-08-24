@@ -133,9 +133,6 @@ export function TrustAwareAgentDetail() {
 
       <header className="project-summary">
         <div className="project-summary-copy">
-          <span className="catalog-status catalog-status--working">
-            <i aria-hidden="true" />Working
-          </span>
           <h1>Trust-Aware Agent</h1>
           <p>
             Choose, call, and verify an ETH/USD source before an agent uses its
