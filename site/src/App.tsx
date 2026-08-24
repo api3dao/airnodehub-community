@@ -77,7 +77,7 @@ export default function App() {
       )}
 
       <footer>
-        <span>Built and maintained by the community, in the open. Not an official API3 product.</span>
+        <span>Open to community contributions and maintained by API3.</span>
       </footer>
     </div>
   );

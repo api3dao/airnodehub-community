@@ -1,17 +1,17 @@
 # AirnodeHub Community
 
-> An unofficial catalog of runnable, frontend-only AirnodeHub use cases that discover APIs, verify signed responses locally, and preserve portable receipts for AI agents and human reviewers.
+> An open catalog of runnable, frontend-only AirnodeHub use cases, maintained by API3 and built for community contribution.
 
 All demonstrations run in the browser without a proxy, database, account, or private API key. They use live AirnodeHub operations and expose the request, response, signer, verification result, and derived output.
 
-An Airnode attestation proves which signer returned specific bytes for a specific request at a specific time. It does not prove that the underlying real-world claim is objectively true. First-party provider provenance and third-party relay provenance must remain visibly distinct.
+An Airnode attestation proves which signer returned specific bytes for a specific request at a specific time. It does not prove that the underlying real-world claim is objectively true. Source policy prefers first-party, then explicitly API3-maintained, then third-party sources. API3-maintained is a policy tier, not an inferred provenance label, and no current ETH/USD example supplies it.
 
 ## Working use cases
 
-- [Trust-Aware Agent](https://airnodehub-community-preview.pages.dev/?project=trust-aware-agent): Select, call, and verify an ETH/USD source before releasing its value to an AI agent. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/trust-aware-agent.md).
-- [Market Integrity Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Compare signed ETH/USD prices without losing the receipt behind each source. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/market-integrity-monitor.md).
+- [Trust-Aware Agent](https://airnodehub-community-preview.pages.dev/?project=trust-aware-agent): Prefer provider-run Nodary, verify it locally, and release ETH/USD only after the trust policy passes. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/trust-aware-agent.md).
+- [Asset Price Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Use first-party Nodary as the reference and compare verified relay prices without losing their receipts. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/market-integrity-monitor.md).
 - [Disaster Evidence Map](https://airnodehub-community-preview.pages.dev/?project=disaster-evidence-map): Attach signed event and location inputs to map markers and alerts. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/disaster-evidence-map.md).
-- [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare the same API request over time and preserve both signed responses behind every change. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/revision-witness.md).
+- [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare two signed ETH/USD snapshots over time and preserve the receipt behind each value. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/revision-witness.md).
 
 ## Project resources
 
