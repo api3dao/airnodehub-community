@@ -1,4 +1,4 @@
-# Market Integrity Monitor
+# Asset Price Monitor
 
 **Status:** Working  
 **Category:** Market data  
@@ -10,17 +10,17 @@ Price dashboards commonly normalize values and discard the provenance of each un
 
 ## Outcome
 
-Compare signed ETH/USD prices while preserving a verification record for every source. Show divergence without collapsing first-party and relayed provenance into one generic “trusted” label.
+Use Nodary's verified first-party ETH/USD price as the reference, then compare other signed prices against it without losing any source receipt.
 
 ## Airnode listings
 
-- Nodary — currently the direct-provider option in this comparison.
-- CoinGecko — relayed listing; the attestation proves what the relay returned.
-- TickerLayer — relayed listing; the attestation proves what the relay returned.
+- Nodary — first-party reference price.
+- CoinGecko — third-party comparison price.
+- TickerLayer — third-party comparison price.
 
 ## Trust pattern
 
-Parallel calls → local verification → deviation check → evidence bundle.
+Parallel calls → local verification → Nodary reference → deviation check → evidence bundle.
 
 ## Implemented flow
 
@@ -28,8 +28,9 @@ Parallel calls → local verification → deviation check → evidence bundle.
 2. Read each live OpenAPI document and expected signer.
 3. Call all eligible listings under one freshness policy.
 4. Verify every response independently.
-5. Calculate median and deviation only from accepted values.
-6. Export an evidence bundle containing every receipt and the derived comparison.
+5. Use Nodary as the reference and calculate each accepted source's deviation from it.
+6. Show the accepted-input median only as secondary context.
+7. Export an evidence bundle containing every receipt and the exact comparison rule.
 
 ## Run it
 
@@ -44,11 +45,12 @@ Open `http://localhost:5173/?project=market-integrity-monitor`.
 ## Acceptance
 
 - A changed response or wrong signer is excluded from the comparison.
-- Direct-provider and relayed provenance remain visibly different.
-- The derived median is bound to the exact accepted receipts.
-- Recorded fixtures make the comparison deterministic in tests.
+- First-party and third-party provenance remain visibly different.
+- Nodary is used as the reference only after its receipt passes local verification.
+- Every deviation and the secondary median are bound to the exact accepted receipts.
+- Median and deviation calculations are deterministic in tests.
 
-The current implementation calls all three sources in parallel, verifies each response independently in the browser, excludes failures, derives the median, flags threshold breaches, and exports the exact calls plus the comparison rule.
+The current implementation calls all three sources in parallel, verifies each response independently in the browser, excludes failures, compares accepted prices against Nodary, and exports the exact calls plus the comparison rule.
 
 ## Contribution scope
 

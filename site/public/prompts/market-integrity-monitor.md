@@ -1,14 +1,15 @@
-# Build a signed market integrity check
+# Build an asset price monitor
 
-Compare ETH/USD values from Nodary, CoinGecko, and TickerLayer through AirnodeHub. Produce a median only from responses that pass local verification.
+Compare ETH/USD values from Nodary, CoinGecko, and TickerLayer through AirnodeHub. Treat Nodary as the reference only after its first-party response passes local verification.
 
-1. Read the live AirnodeHub catalog and each listing's OpenAPI document. Confirm the current operations, parameters, signer addresses, provenance, and payment terms instead of hardcoding them.
+1. Read each listing's live OpenAPI document. Confirm its current operation, parameters, signer address, and payment terms; use the repository's reviewed catalog metadata for provenance labels.
 2. Request the equivalent ETH/USD value from all three sources.
 3. Verify every request hash, response payload, EIP-191 signature, expected signer, and timestamp locally. Reject responses older than five minutes.
-4. Normalize accepted values to USD, calculate their median, and flag any source whose absolute deviation exceeds 1%.
-5. Label Nodary as first-party only if the live listing still says so. Label relayed sources as third-party provenance.
-6. Return the median, accepted and rejected inputs, deviations, verification outcomes, and a portable evidence bundle containing every signed receipt plus the exact calculation rule.
+4. Normalize accepted values to USD. Use the verified Nodary value as the reference and flag any accepted comparison source whose absolute deviation from it exceeds 1%.
+5. Calculate the accepted-input median only as secondary context; do not replace the first-party reference with consensus.
+6. Keep the reviewed provenance metadata aligned with the published AirnodeHub catalog. Label relayed sources as third-party provenance and never infer an unsupported tier.
+7. Return the Nodary reference, accepted and rejected inputs, deviations, secondary median, verification outcomes, and a portable evidence bundle containing every signed receipt plus the exact calculation rule.
 
-Do not treat agreement as objective truth. Consensus reduces single-source risk, while each attestation proves only which signer returned specific bytes at a specific time.
+Prefer first-party data over API3-maintained sources, and API3-maintained sources over third parties. Do not present an unavailable tier as supported. A signature proves which signer returned specific bytes at a specific time; it does not make a market price objectively true.
 
 Catalog: `https://airnodehub.api3.org/llms.txt`

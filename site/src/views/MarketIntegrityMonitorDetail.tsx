@@ -34,45 +34,45 @@ function toSpec(candidate: Candidate): ListingCallSpec {
 
 function MarketRangePlot({
   results,
-  baseline,
+  reference,
   threshold,
 }: {
   results: Array<MarketResult & { call: VerifiedCall; normalized: NormalizedPrice }>;
-  baseline: number;
+  reference: number;
   threshold: number;
 }) {
   const values = results.map((result) => result.normalized.value);
-  const thresholdWidth = baseline * (threshold / 100);
+  const thresholdWidth = reference * (threshold / 100);
   const observedWidth = Math.max(...values) - Math.min(...values);
-  const halfDomain = Math.max(thresholdWidth * 1.65, observedWidth * 0.78, baseline * 0.001);
-  const domainMin = baseline - halfDomain;
-  const domainMax = baseline + halfDomain;
+  const halfDomain = Math.max(thresholdWidth * 1.65, observedWidth * 0.78, reference * 0.001);
+  const domainMin = reference - halfDomain;
+  const domainMax = reference + halfDomain;
   const position = (value: number) =>
     Math.max(0, Math.min(100, ((value - domainMin) / (domainMax - domainMin)) * 100));
-  const safeStart = position(baseline - thresholdWidth);
-  const safeEnd = position(baseline + thresholdWidth);
+  const safeStart = position(reference - thresholdWidth);
+  const safeEnd = position(reference + thresholdWidth);
 
   return (
-    <section className="market-range-plot" aria-label="Verified price distribution around the median">
+    <section className="market-range-plot" aria-label="Verified price distribution around the Nodary reference">
       <header>
-        <div><span>Signed price distribution</span><strong>Median corridor</strong></div>
-        <p>The green band is your ±{threshold}% policy. Each dot is positioned from a verified response.</p>
+        <div><span>Signed price distribution</span><strong>Nodary reference corridor</strong></div>
+        <p>The green band is your ±{threshold}% policy around the verified first-party price.</p>
       </header>
       <div className="market-plot-body">
         <div className="market-axis-labels" aria-hidden="true">
           <span>${domainMin.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-          <strong>Median ${baseline.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong>
+          <strong>Nodary ${reference.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong>
           <span>${domainMax.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
         </div>
         {results.map((result) => {
           const price = result.normalized.value;
-          const outside = Math.abs(deviationPercent(price, baseline)) > threshold;
+          const outside = Math.abs(deviationPercent(price, reference)) > threshold;
           return (
             <div className="market-source-track" key={result.candidate.listing}>
               <span>{sourceName(result.candidate.listing)}<small>{result.candidate.attestation === 'first-party' ? 'Provider' : 'Relay'}</small></span>
               <div className="market-track-line">
                 <i className="market-safe-band" style={{ left: `${safeStart}%`, width: `${safeEnd - safeStart}%` }} />
-                <i className="market-median-line" style={{ left: `${position(baseline)}%` }} />
+                <i className="market-median-line" style={{ left: `${position(reference)}%` }} />
                 <b className={outside ? 'is-outside' : ''} style={{ left: `${position(price)}%` }}>
                   <span>${price.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
                 </b>
@@ -94,23 +94,27 @@ export function MarketIntegrityMonitorDetail() {
     (result): result is MarketResult & { call: VerifiedCall; normalized: NormalizedPrice } =>
       Boolean(result.call && result.normalized),
   );
+  const nodaryReference = accepted.find(
+    (result) => result.candidate.listing === 'nodary' && result.candidate.attestation === 'first-party',
+  ) ?? null;
   const marketMedian = accepted.length
     ? median(accepted.map((result) => result.normalized.value))
     : null;
-  const spread = accepted.length > 1
-    ? Math.max(...accepted.map((result) => result.normalized.value)) -
-      Math.min(...accepted.map((result) => result.normalized.value))
-    : 0;
 
   const bundle = useMemo(
-    () => marketMedian === null ? null : {
+    () => !nodaryReference || marketMedian === null ? null : {
       schemaVersion: '1.0',
-      type: 'airnodehub.market-integrity-monitor',
+      type: 'airnodehub.asset-price-monitor',
       createdAt: new Date().toISOString(),
-      rule: { pair: 'ETH/USD', median: marketMedian, deviationThresholdPercent: threshold },
+      rule: {
+        pair: 'ETH/USD',
+        reference: { listing: 'nodary', value: nodaryReference.normalized.value },
+        median: marketMedian,
+        deviationThresholdPercent: threshold,
+      },
       inputs: accepted.map(({ call, normalized }) => ({ call, normalized })),
     },
-    [accepted, marketMedian, threshold],
+    [accepted, marketMedian, nodaryReference, threshold],
   );
 
   async function compareSources() {
@@ -141,20 +145,20 @@ export function MarketIntegrityMonitorDetail() {
 
   return (
     <ProjectDetailFrame
-      title="Market Integrity Monitor"
-      tagline="Compare ETH/USD across signed sources without throwing away the receipt behind each value."
-      problem="Price dashboards usually normalize values and lose who returned each input."
-      outcome="The median and every deviation remain bound to independently verified source receipts."
-      boundary="Consensus reduces single-source risk; it does not make a market price objectively true."
+      title="Asset Price Monitor"
+      tagline="Use verified first-party Nodary data as the reference, then compare other signed ETH/USD prices."
+      problem="Price dashboards often hide which provider supplied each value."
+      outcome="Every price and its deviation from Nodary remain bound to a verified receipt."
+      boundary="A signed response proves its source and integrity, not that a market price is objectively true."
       prompt={{
         path: '/prompts/market-integrity-monitor.md',
-        title: 'Ask an agent to compare signed market inputs.',
-        description: 'This prompt produces an ETH/USD median with source-level verification, deviation flags, and a portable evidence bundle.',
+        title: 'Ask an agent to compare prices against Nodary.',
+        description: 'This prompt treats verified first-party Nodary data as the reference and preserves every source receipt.',
       }}
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="market-demo-title">
-        <h2 id="market-demo-title">One number, three receipts</h2>
-        <p>Every source is inspected, called, and verified independently before it enters the median.</p>
+        <h2 id="market-demo-title">One reference, three receipts</h2>
+        <p>Nodary is the first-party reference. Other verified prices are measured against it.</p>
       </section>
 
       <section className="demo-workbench market-workbench" aria-live="polite">
@@ -178,8 +182,8 @@ export function MarketIntegrityMonitorDetail() {
 
         {running && (
           <LiveCallLoading
-            title="Comparing three independent price responses"
-            detail="The browser is reading each live contract, calling the operation, and checking every signature before calculating a median."
+            title="Checking Nodary and two comparison sources"
+            detail="The browser verifies every response before measuring other prices against the first-party Nodary reference."
             sources={['Nodary', 'CoinGecko', 'TickerLayer']}
           />
         )}
@@ -187,43 +191,50 @@ export function MarketIntegrityMonitorDetail() {
         {!running && marketMedian === null && results.length === 0 && (
           <div className="workbench-empty">
             <span className="empty-glyph">↔</span>
-            <strong>Run a live integrity check</strong>
-            <p>The dashboard will exclude any source whose request, signer, signature, or freshness check fails.</p>
+            <strong>Compare live verified prices</strong>
+            <p>Nodary becomes the reference only after its request, signer, signature, and freshness checks pass.</p>
           </div>
         )}
 
-        {marketMedian !== null && (
+        {!running && results.length > 0 && !nodaryReference && (
+          <div className="workbench-empty">
+            <strong>Nodary reference unavailable</strong>
+            <p>Other verified receipts remain visible, but no deviation is calculated without the first-party reference.</p>
+          </div>
+        )}
+
+        {nodaryReference && marketMedian !== null && (
           <>
             <div className="market-summary">
-              <div><span>Verified median</span><strong>${marketMedian.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
+              <div><span>Nodary reference</span><strong>${nodaryReference.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
               <div><span>Accepted inputs</span><strong>{accepted.length} / {PRICE_CATALOG.length}</strong></div>
-              <div><span>Price spread</span><strong>${spread.toFixed(2)}</strong></div>
+              <div><span>Verified median</span><strong>${marketMedian.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
             </div>
-            <MarketRangePlot results={accepted} baseline={marketMedian} threshold={threshold} />
+            <MarketRangePlot results={accepted} reference={nodaryReference.normalized.value} threshold={threshold} />
           </>
         )}
 
         {results.length > 0 && (
           <div className="source-ledger" id="evidence">
             <div className="ledger-columns" aria-hidden="true">
-              <span>Source</span><span>Price</span><span>Deviation</span><span>Receipt</span>
+              <span>Source</span><span>Price</span><span>vs Nodary</span><span>Receipt</span>
             </div>
             {results.map((result) => {
-              const deviation = result.normalized && marketMedian !== null
-                ? deviationPercent(result.normalized.value, marketMedian)
+              const deviation = result.normalized && nodaryReference
+                ? deviationPercent(result.normalized.value, nodaryReference.normalized.value)
                 : null;
               const flagged = deviation !== null && Math.abs(deviation) > threshold;
               return (
                 <article className={result.error ? 'is-rejected' : flagged ? 'is-flagged' : ''} key={result.candidate.listing}>
                   <div className="ledger-source">
                     <i className={`source-dot source-dot--${result.candidate.attestation}`} />
-                    <span><strong>{sourceName(result.candidate.listing)}</strong><small>{result.candidate.attestation === 'first-party' ? 'Original provider' : 'API3 relay'}</small></span>
+                    <span><strong>{sourceName(result.candidate.listing)}</strong><small>{result.candidate.attestation === 'first-party' ? 'Original provider' : 'Third-party relay'}</small></span>
                   </div>
                   <strong className="ledger-price">
                     {result.normalized ? `$${result.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : 'Excluded'}
                   </strong>
                   <span className={`ledger-deviation ${flagged ? 'is-flagged' : ''}`}>
-                    {deviation === null ? 'Not accepted' : `${deviation >= 0 ? '+' : ''}${deviation.toFixed(2)}%`}
+                    {deviation === null ? (result.normalized ? 'No reference' : 'Not accepted') : `${deviation >= 0 ? '+' : ''}${deviation.toFixed(2)}%`}
                   </span>
                   <div>
                     {result.call ? (
@@ -238,8 +249,8 @@ export function MarketIntegrityMonitorDetail() {
 
         {bundle && (
           <div className="evidence-export">
-            <div><strong>Comparison is reproducible</strong><span>The bundle contains every signed input plus the exact median rule.</span></div>
-            <button onClick={() => downloadJson('market-integrity-evidence.json', bundle)} type="button">Download evidence bundle</button>
+            <div><strong>Comparison is reproducible</strong><span>The bundle contains every signed input plus the reference and deviation rule.</span></div>
+            <button onClick={() => downloadJson('asset-price-evidence.json', bundle)} type="button">Download evidence bundle</button>
           </div>
         )}
       </section>
