@@ -1,35 +1,18 @@
-# Trust-Aware Agent · Community Project 01
+# Trust-Aware Agent
 
-This project runs in the shared static browser app for [AirnodeHub Community](../../README.md), an unofficial collection of frontend-only API demonstrations.
+A browser demo that requests ETH/USD, tries the highest-priority eligible source first, and releases the value to an agent only after local verification.
 
-**Status:** Working  
-**Category:** Agent safety  
-**Airnode listings:** Nodary, CoinGecko, TickerLayer  
-**Artifact:** Runnable browser demo
+## Source policy
 
-## Problem
+The preferred order is:
 
-Agents often accept API output without checking who returned it, whether the response was changed, or whether it is still fresh enough for the decision.
+1. **First-party** — Nodary is provider-operated and provider-signed, so the demo tries it first.
+2. **API3-maintained** — the next-best tier; no eligible ETH/USD candidate is currently listed in this demo.
+3. **Third-party** — CoinGecko and TickerLayer relay listings are fallbacks.
 
-## Outcome
+Nodary is selected when its live contract matches and its signed response passes every check. If it is unavailable or fails verification, the demo can try the next eligible candidate. The receipt records the selected source and every rejected or failed candidate.
 
-Accept an ETH/USD value only after its signer, request, freshness, and derived price pass every check; return a portable verification record with the value.
-
-Give an AI agent one tool to discover, call, and verify external data through AirnodeHub.
-
-This first community demo accepts an ETH/USD price intent, evaluates live Airnode candidates against an explicit trust policy, calls the selected Airnode directly, verifies its EIP-191 attestation locally, and exports a portable evidence receipt.
-
-## Why an agent would use it
-
-A normal data tool returns a value. `trustedFetch()` also returns:
-
-- why one source was selected and the others were not;
-- whether the source is first-party or a third-party relay;
-- whether the response signer matches the resolver and live Airnode document;
-- whether the response is still fresh enough for the agent's policy;
-- a receipt that can be re-verified offline or handed to another agent.
-
-An attestation proves that a signer returned specific bytes for a specific request at a specific time. It does **not** prove that the underlying fact is universally true. Today, Nodary is the first-party option in this demo; CoinGecko and TickerLayer are third-party relay attestations.
+An attestation proves which signer returned specific bytes for a specific request at a specific time. It does **not** prove that the market price is objectively true.
 
 ## Run it
 
@@ -41,102 +24,41 @@ pnpm install
 pnpm dev
 ```
 
-Open the local URL printed by Vite, then run the pre-filled intent:
+Open the local URL printed by Vite and select **Trust-Aware Agent**. No API key or application backend is required.
 
-> Get the current USD price of ETH from the strongest available source.
+## What happens
 
-No API key is required for the current early-access listings. The browser calls AirnodeHub and the selected Airnode directly; their CORS policies permit the flow.
+1. AirnodeHub resolves the ETH/USD request to live candidates.
+2. The local policy ranks first-party provenance first and blocks paid calls by default.
+3. The browser checks the selected listing's live operation and expected signer.
+4. It calls the Airnode directly and verifies the request hash, response bytes, EIP-191 signature, signer, freshness, and normalized price.
+5. Only a verified value is released with a portable receipt.
 
-There is no application backend: no proxy route, database, serverless function, secret, account system, webhook, or worker. Vite's local development server only serves the static frontend during development.
+The resolver may return a retryable `503` during early access. After two bounded attempts, the demo uses its clearly labelled price catalog, still checks the selected Airnode's live document, and still verifies the live response.
 
-The catalog links to these runnable routes:
+The agent-ready prompt is [`site/public/prompts/trust-aware-agent.md`](../../site/public/prompts/trust-aware-agent.md). The framework-neutral tool contract is [`site/examples/agent-tool.json`](../../site/examples/agent-tool.json).
 
-- `?project=trust-aware-agent`
-- `?project=market-integrity-monitor`
-- `?project=disaster-evidence-map`
-- `?project=revision-witness`
-
-## Agent-facing API
-
-```ts
-import { trustedFetch } from '../../site/src/lib';
-
-const result = await trustedFetch({
-  intent: 'current USD price of ETH',
-  policy: {
-    preferFirstParty: true,
-    maxAttestationAgeSeconds: 60,
-    allowPaidCalls: false,
-  },
-});
-
-if (!result.trust.valid) throw new Error('Untrusted external input');
-
-console.log(result.normalized.value);
-console.log(result.decision);
-console.log(result.receipt);
-```
-
-The framework-neutral tool contract is in [`examples/agent-tool.json`](../../site/examples/agent-tool.json). This repository only demonstrates the contract in the browser; it does not run an MCP or agent backend.
-
-## What happens on every call
-
-1. Send the natural-language intent to `POST https://airnodehub.api3.org/resolve`.
-2. Apply deterministic provenance and payment policy to returned candidates.
-3. Read the selected Airnode's live OpenAPI document over HTTPS.
-4. Confirm the current operation and expected signer.
-5. Call the operation directly on the Airnode.
-6. Recompute the canonical request hash and recover the EIP-191 signer locally.
-7. Enforce signed-response freshness and export `receipt.json`.
-
-The resolver may return a retryable `503` during early access. After two bounded attempts, this demo can use a clearly labelled, pinned price catalog. Degraded mode still reads the selected Airnode's live document and verifies the live response. A successful resolver response with zero candidates is treated as unsupported; the app never fabricates a match.
-
-## Verification and tamper demo
-
-The local verifier binds:
-
-- operation and canonical parameters;
-- `requestHash`;
-- signed timestamp;
-- response bytes;
-- response signer;
-- signer advertised by the live Airnode document;
-- normalized price derived from the signed data.
-
-Use **Tamper with price +$100** in the UI. It changes only a cloned receipt and immediately invalidates the signature. Restore returns to the untouched original.
-
-## Tests
+## Verify the demo
 
 ```bash
-pnpm test      # deterministic, offline fixtures
-pnpm build     # typecheck + production build
-pnpm test:live # optional 90-second live smoke test
+cd site
+pnpm test
+pnpm build
+pnpm test:live # optional live smoke test
 ```
 
-Offline fixtures cover canonical key ordering, meaningful array ordering, signature verification, tampered data, changed timestamp, stale responses, receipt round-tripping, derived-data integrity, deterministic source ranking, and blocked paid calls.
+Use **Change the price to test the checks** after a successful call. The demo changes a cloned receipt, invalidates its signature, and leaves the original receipt untouched.
 
 ## Current scope
 
-Included:
-
-- ETH/USD only;
-- Nodary, CoinGecko, and TickerLayer;
-- browser UI and reusable TypeScript trust core;
-- local verification, receipt export, and tamper demonstration;
-- bounded resolver retry with explicit degraded mode.
-
-Deferred until the vertical slice is proven:
-
-- automatic x402 payment;
-- MCP and framework-specific adapters;
-- server-side polling and webhooks, which are outside this frontend demonstration repository.
-
-The other three working demos reuse the generic live-contract and local-verification layer for price consensus, disaster evidence, and data-revision history. See the shared [project backlog](../../IDEAS.md) and [contribution guide](../../CONTRIBUTING.md).
+- ETH/USD only
+- Nodary, CoinGecko, and TickerLayer
+- frontend-only calls and local verification
+- no automatic payment, MCP server, proxy, database, webhook, or worker
 
 ## References
 
 - [AirnodeHub catalogue](https://airnodehub.api3.org/llms.txt)
-- [Full operation catalogue](https://airnodehub.api3.org/llms-full.txt)
 - [Consumer flow](https://airnodehub-docs.api3.org/api-consumers/)
 - [Attestation algorithm](https://airnodehub-docs.api3.org/airnode/attestation)
 

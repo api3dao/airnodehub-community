@@ -20,8 +20,7 @@ import type {
   VerificationResult,
 } from '../lib';
 
-const DEFAULT_INTENT =
-  'Get the current USD price of ETH from the strongest available source.';
+const DEFAULT_INTENT = 'Get the current USD price of ETH.';
 
 function Toggle({
   checked,
@@ -118,7 +117,7 @@ export function TrustAwareAgentDetail() {
   const decisions = result?.decision.decisions ?? failedDecisions;
   const discoveryMode = result?.decision.discoveryMode;
   const policySummary = [
-    policy.preferFirstParty ? 'Prefer the source owner' : 'Allow relayed sources',
+    'Nodary first',
     `answer newer than ${policy.maxAttestationAgeSeconds}s`,
     policy.allowPaidCalls ? 'show priced sources' : 'free sources only',
   ].join(' · ');
@@ -135,33 +134,33 @@ export function TrustAwareAgentDetail() {
         <div className="project-summary-copy">
           <h1>Trust-Aware Agent</h1>
           <p>
-            Choose, call, and verify an ETH/USD source before an agent uses its
-            value.
+            Prefer the data provider, verify its response, then release the
+            value to the agent.
           </p>
         </div>
       </header>
 
       <section className="project-overview" id="overview" aria-labelledby="overview-title">
-        <h2 id="overview-title">What the receipt changes</h2>
+        <h2 id="overview-title">Source priority</h2>
         <div>
           <article>
-            <span>Problem</span>
-            <p>Agents often accept API output without checking its signer or whether the response changed.</p>
+            <span>1 · First-party</span>
+            <p>Nodary runs and signs its own ETH/USD feed, so the demo tries it first.</p>
           </article>
           <article>
-            <span>Outcome</span>
-            <p>The ETH/USD value is released only after request, signer, freshness, and derived-price checks pass.</p>
+            <span>2 · API3-maintained</span>
+            <p>This is the next tier, but no eligible ETH/USD candidate is listed today.</p>
           </article>
           <article>
-            <span>Boundary</span>
-            <p>The signature proves provenance and integrity. It does not prove that a market price is objectively true.</p>
+            <span>3 · Third-party</span>
+            <p>CoinGecko and TickerLayer relays are verified fallbacks if Nodary cannot be used.</p>
           </article>
         </div>
       </section>
 
       <section className="live-demo-heading" id="live-demo" aria-labelledby="live-demo-title">
-        <h2 id="live-demo-title">Put a verification gate in front of the agent</h2>
-        <p>Runs against published AirnodeHub listings and verifies the response in this browser.</p>
+        <h2 id="live-demo-title">Try Nodary first. Trust only what verifies.</h2>
+        <p>A signature proves provenance and integrity, not that a market price is objectively true.</p>
       </section>
 
       <form className="prompt-card" onSubmit={runAgent}>
@@ -182,28 +181,13 @@ export function TrustAwareAgentDetail() {
           <summary>
             <span className="policy-icon" aria-hidden="true">✓</span>
             <span>
-              <strong>Advanced verification settings</strong>
+              <strong>Verification settings</strong>
               <small>{policySummary}</small>
             </span>
             <i aria-hidden="true" />
           </summary>
 
           <div className="policy-grid">
-            <div className="policy-control">
-              <div>
-                <strong>Prefer the source owner</strong>
-                <small>Choose data signed by its provider when possible</small>
-              </div>
-              <Toggle
-                checked={policy.preferFirstParty}
-                disabled={running}
-                label="Prefer sources run by the data provider"
-                onChange={(preferFirstParty) =>
-                  setPolicy((current) => ({ ...current, preferFirstParty }))
-                }
-              />
-            </div>
-
             <label className="policy-control policy-select">
               <div>
                 <strong>Maximum answer age</strong>
@@ -249,15 +233,15 @@ export function TrustAwareAgentDetail() {
           <div className="promise-row">
             <div>
               <span aria-hidden="true">1</span>
-              <p><strong>AirnodeHub finds</strong> a live ETH price source.</p>
+              <p><strong>Try Nodary</strong> as the first-party source.</p>
             </div>
             <div>
               <span aria-hidden="true">2</span>
-              <p><strong>The source returns</strong> a price plus its signature.</p>
+              <p><strong>Verify</strong> its signer, response, and freshness.</p>
             </div>
             <div>
               <span aria-hidden="true">3</span>
-              <p><strong>Your browser checks</strong> it before the agent uses it.</p>
+              <p><strong>Release</strong> only verified data to the agent.</p>
             </div>
           </div>
         </section>
