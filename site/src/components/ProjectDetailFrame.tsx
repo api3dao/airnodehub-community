@@ -67,9 +67,6 @@ export function ProjectDetailFrame({
 
       <header className="project-summary">
         <div className="project-summary-copy">
-          <span className="catalog-status catalog-status--working">
-            <i aria-hidden="true" />Working
-          </span>
           <h1>{title}</h1>
           <p>{tagline}</p>
         </div>

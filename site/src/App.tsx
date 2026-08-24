@@ -4,6 +4,9 @@ import { MarketIntegrityMonitorDetail } from './views/MarketIntegrityMonitorDeta
 import { RevisionWitnessDetail } from './views/RevisionWitnessDetail';
 import { TrustAwareAgentDetail } from './views/TrustAwareAgentDetail';
 
+const REPO_URL = 'https://github.com/api3dao/airnodehub-community';
+const AIRNODEHUB_URL = 'https://airnodehub.api3.org/';
+
 function BrandMark() {
   return (
     <span className="brand-mark" aria-hidden="true">
@@ -11,6 +14,15 @@ function BrandMark() {
       <i />
       <i />
     </span>
+  );
+}
+
+function ExternalMark() {
+  return (
+    <svg className="external-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+      <path d="M4.2 2h5.3v5.3" />
+      <path d="M9.5 2 2.6 8.9" />
+    </svg>
   );
 }
 
@@ -27,29 +39,25 @@ export default function App() {
   return (
     <div className={`app-shell ${isCatalog ? 'is-catalog-view' : 'is-project-view'}`}>
       <header className="site-header">
-        <a className="brand" href="./" aria-label="AirnodeHub Community catalog">
-          <BrandMark />
-          <strong>AirnodeHub</strong>
-          <span>Community Catalog</span>
-        </a>
-        <nav aria-label="Primary navigation">
-          {isCatalog ? (
-            <>
-              <a href="#use-cases">Use cases</a>
-              <a href="#contribute">Contribute</a>
-            </>
-          ) : (
-            <>
-              <a href="./">All use cases</a>
-              {knownProject && <a href="#live-demo">Live demo</a>}
-            </>
+        <div className="header-primary">
+          <a className="brand" href="./" aria-label="AirnodeHub Community">
+            <BrandMark />
+            <strong>AirnodeHub Community</strong>
+          </a>
+          {!isCatalog && knownProject && (
+            <nav aria-label="Primary navigation">
+              <a href="#live-demo">Live demo</a>
+            </nav>
           )}
-          <a
-            href="https://airnodehub-docs.api3.org/api-consumers/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
+        </div>
+        <nav className="header-external" aria-label="Related sites">
+          <a href={AIRNODEHUB_URL} target="_blank" rel="noreferrer">
+            AirnodeHub
+            <ExternalMark />
+          </a>
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            GitHub
+            <ExternalMark />
           </a>
         </nav>
       </header>
@@ -69,8 +77,7 @@ export default function App() {
       )}
 
       <footer>
-        <span>AirnodeHub Community.</span>
-        <span>Signatures prove provenance and integrity, not objective truth.</span>
+        <span>Built and maintained by the community, in the open. Not an official API3 product.</span>
       </footer>
     </div>
   );
