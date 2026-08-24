@@ -1,33 +1,35 @@
 # Verified Change Tracker
 
-**Status:** Working  
-**Category:** Data history  
-**Artifact:** Signed before-and-after record
+**Status:** Working
+
+**Category:** Data history
+
+**Artifact:** Signed price change record
 
 ## Problem
 
-Changing APIs usually expose only their current response. Applications can see the new value, but cannot prove what the same source returned at an earlier decision point.
+Price APIs expose the latest value. Applications can see the new price, but cannot prove what the same source returned at an earlier decision point.
 
 ## Outcome
 
-Repeat one identical live API request over time. Preserve each verified response as a signed before-or-after state and show exactly which fields changed.
+Call the same first-party ETH/USD feed twice. Preserve each verified response as snapshot A or B and show the observed price delta, elapsed time, signer, and both receipts.
 
 ## Airnode listing
 
-- Wikidata — Berlin (`Q64`) population statements (`P1082`) through `getItemStatements`.
+- Nodary — provider-signed ETH/USD through `latestFeeds`.
 
 ## Trust pattern
 
-Live call → signed baseline → repeat call → verified field-level diff.
+Live call → signed price A → separate live call → signed price B → verified delta.
 
 ## Implemented flow
 
-1. Pin one deterministic operation and parameter set.
-2. Capture its live response as the signed “before” state.
-3. Repeat the identical request later to create the “after” state.
-4. Verify both signed responses before accepting them.
-5. Produce a field-level diff between the two complete responses.
-6. Export the request, receipts, and diff as one portable change record.
+1. Pin Nodary's ETH/USD operation and parameters.
+2. Capture its live response as signed snapshot A.
+3. Make a separate live call to create signed snapshot B.
+4. Verify both responses locally before accepting them.
+5. Calculate the price and percentage delta from the signed values and show the elapsed time.
+6. Export the signer, capture times, receipts, and delta as one portable change record.
 
 ## Run it
 
@@ -39,15 +41,15 @@ pnpm dev
 
 Open `http://localhost:5173/?project=revision-witness`.
 
-Snapshots persist in local browser storage. The current demo tracks Berlin population statements returned by Wikidata. Capture the same request again later to obtain either a verified unchanged result or a field-level diff.
+The two snapshots stay in the page until you clear them or leave the demo. Capture the price twice to obtain either a verified delta or an honest unchanged result; a response without a newer signed timestamp is rejected instead of being presented as a second capture.
 
 ## Acceptance
 
 - Invalid snapshots never enter the accepted timeline.
-- Array ordering and object canonicalization are tested explicitly.
-- Diffs are reproducible from the saved receipts.
+- Both prices are derived from their saved, signed Nodary responses.
+- The delta and elapsed time are reproducible from the saved receipts and signed attestation times.
 - Failed calls create gaps, not fabricated unchanged snapshots.
 
 ## Contribution scope
 
-Background scheduling and webhooks are intentionally outside this frontend-only repository. The browser recipe never invents an unchanged snapshot when a capture fails.
+Background scheduling and webhooks are intentionally outside this frontend-only repository. The browser recipe never invents a price movement or an unchanged snapshot when a capture fails.
