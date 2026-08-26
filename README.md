@@ -10,7 +10,7 @@ This repository intentionally has no application backend. The static Vite app in
 
 ## Deployment
 
-Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist` to the `airnodehub-community-preview` Cloudflare Pages project. The workflow requires the repository secret `CLOUDFLARE_API_TOKEN` and repository variable `CLOUDFLARE_ACCOUNT_ID`.
+Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist` to the `airnodehub-community-preview` Cloudflare Pages project. Each pull request from a branch in this repository receives its own temporary `airnodehub-community-pr-<number>` Pages project and one automatically updated preview comment. Closing or merging the pull request deletes that project and marks the preview as deleted. Fork pull requests run the checks but skip deployment so Cloudflare credentials are never exposed to untrusted code. The workflows require a `CLOUDFLARE_API_TOKEN` repository secret scoped to Cloudflare Pages Edit and a `CLOUDFLARE_ACCOUNT_ID` repository variable. Because Pages tokens are account-scoped, use a preview-only Cloudflare account for strict production isolation.
 
 ## Use-case catalog
 
