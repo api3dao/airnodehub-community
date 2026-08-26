@@ -4477,7 +4477,34 @@ summary:focus-visible {
 }
 
 .progress-step--running i {
+  position: relative;
   box-shadow: none;
+}
+
+.progress-step--running i::before,
+.progress-step--running i::after {
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(27, 57, 255, 0.55);
+  border-radius: inherit;
+  animation: progress-step-pulse 1.4s ease-out infinite;
+  content: '';
+  pointer-events: none;
+}
+
+.progress-step--running i::after {
+  animation-delay: -700ms;
+}
+
+@keyframes progress-step-pulse {
+  from {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 
 .agent-decision-gate {
