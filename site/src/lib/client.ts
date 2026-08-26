@@ -1,4 +1,8 @@
-import { PRICE_CATALOG, supportsCatalogFallback } from './catalog';
+import {
+  PRICE_CATALOG,
+  supplementPriceCandidates,
+  supportsCatalogFallback,
+} from './catalog';
 import { normalizePrice } from './normalize';
 import { DEFAULT_POLICY, evaluateCandidates } from './policy';
 import type {
@@ -118,16 +122,23 @@ async function discover(
         );
       }
 
+      const usesPriceCatalog = supportsCatalogFallback(intent);
+      const candidates = usesPriceCatalog
+        ? supplementPriceCandidates(resolution.candidates)
+        : resolution.candidates;
+
       emit(
         onTrace,
         'discover',
-        `${resolution.candidates.length} candidates discovered`,
-        'Parameters, provenance, signer, and payment requirements came from the resolver.',
+        `${candidates.length} candidates discovered`,
+        usesPriceCatalog
+          ? 'The resolver matched the intent; the demo added its known ETH/USD sources for trust-policy ranking.'
+          : 'Parameters, provenance, signer, and payment requirements came from the resolver.',
         'success',
       );
       return {
-        candidates: resolution.candidates,
-        mode: 'resolver',
+        candidates,
+        mode: usesPriceCatalog ? 'resolver+catalog' : 'resolver',
         attempts: attempt,
       };
     } catch (error) {
