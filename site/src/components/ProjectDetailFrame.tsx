@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 export function AgentPromptCallout({
   path,
@@ -9,16 +9,22 @@ export function AgentPromptCallout({
   title: string;
   description: string;
 }) {
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  useEffect(() => {
+    if (status === 'idle') return;
+    const timer = window.setTimeout(() => setStatus('idle'), 2000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
 
   async function copyPrompt() {
     try {
       const response = await fetch(path);
       if (!response.ok) throw new Error('Prompt unavailable');
       await navigator.clipboard.writeText(await response.text());
-      setStatus('Copied');
+      setStatus('copied');
     } catch {
-      setStatus('Open the raw prompt to copy it');
+      setStatus('error');
     }
   }
 
@@ -30,11 +36,17 @@ export function AgentPromptCallout({
         <p>{description}</p>
       </div>
       <div className="agent-prompt-actions">
-        <button className="primary-action" onClick={copyPrompt} type="button">
-          {status === 'Copied' ? 'Prompt copied' : 'Copy agent prompt'}
+        <button className="primary-action copy-prompt-button" onClick={copyPrompt} type="button">
+          {status === 'copied' ? '✓ Prompt copied' : status === 'error' ? 'Couldn’t copy' : 'Copy agent prompt'}
         </button>
         <a href={path} target="_blank" rel="noreferrer">View raw prompt</a>
-        <small aria-live="polite">{status}</small>
+        <small aria-live="polite">
+          {status === 'copied'
+            ? 'The agent prompt is on your clipboard.'
+            : status === 'error'
+              ? 'Open the raw prompt to copy it.'
+              : ''}
+        </small>
       </div>
     </section>
   );

@@ -399,7 +399,7 @@ main {
     0 16px 42px rgba(0, 0, 0, 0.08);
 }
 
-.prompt-card > label {
+.prompt-card > .prompt-label {
   display: block;
   color: var(--secondary);
   font-size: 13px;
@@ -414,22 +414,14 @@ main {
   padding: 7px 0 22px;
 }
 
-.prompt-row textarea {
-  width: 100%;
-  min-height: 72px;
-  resize: vertical;
+.agent-request-copy {
+  margin: 0;
   padding: 7px 0;
   color: var(--ink);
-  background: transparent;
-  border: 0;
   font-size: clamp(20px, 2.2vw, 25px);
   font-weight: 520;
   letter-spacing: -0.025em;
   line-height: 1.35;
-}
-
-.prompt-row textarea:focus {
-  outline-offset: 6px;
 }
 
 .run-button,
@@ -2126,8 +2118,7 @@ footer {
     gap: 12px;
   }
 
-  .prompt-row textarea {
-    min-height: 92px;
+  .agent-request-copy {
     font-size: 20px;
   }
 
@@ -4480,6 +4471,11 @@ summary:focus-visible {
   display: none;
 }
 
+.progress-orb.is-failed {
+  color: white;
+  background: var(--red);
+}
+
 .progress-step--running i {
   box-shadow: none;
 }
@@ -4559,6 +4555,18 @@ summary:focus-visible {
   background: transparent;
 }
 
+.proof-card.is-invalid .price-block > span,
+.proof-card.is-invalid .price-block > strong small {
+  color: var(--red);
+}
+
+.proof-card.is-invalid .price-block > strong {
+  color: var(--secondary);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--red) 75%, transparent);
+  text-decoration-thickness: 2px;
+}
+
 .trust-message {
   background: #e2e6ed;
   border-radius: 4px;
@@ -4570,6 +4578,69 @@ summary:focus-visible {
   color: var(--green);
   background: transparent;
   border-radius: 0;
+}
+
+.is-invalid .trust-message > span {
+  color: var(--red);
+  background: transparent;
+}
+
+.trust-message > span svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.provider-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 32%, transparent);
+  text-underline-offset: 3px;
+}
+
+.provider-link:hover {
+  color: var(--blue);
+  text-decoration-color: currentColor;
+}
+
+.copy-prompt-button {
+  min-width: 190px;
+  justify-content: center;
+}
+
+.value-flash {
+  --value-flash-color: rgba(27, 57, 255, 0.16);
+  border-radius: 4px;
+  animation: value-flash 520ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.value-flash--up {
+  --value-flash-color: rgba(22, 133, 92, 0.18);
+}
+
+.value-flash--down {
+  --value-flash-color: rgba(199, 48, 48, 0.16);
+}
+
+@keyframes value-flash {
+  0% {
+    background-color: var(--value-flash-color);
+    transform: translateY(-2px) scale(1.025);
+  }
+  100% {
+    background-color: transparent;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .value-flash {
+    animation: none;
+  }
 }
 
 .result-facts {

@@ -10,7 +10,7 @@ Price dashboards commonly normalize values and discard the provenance of each un
 
 ## Outcome
 
-Use Nodary's verified first-party ETH/USD price as the reference, then compare other signed prices against it without losing any source receipt.
+Use [Nodary's](https://nodary.io/) verified first-party ETH/USD price as the reference, then compare other signed prices against it without losing any source receipt.
 
 ## Airnode listings
 

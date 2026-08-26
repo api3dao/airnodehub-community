@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { CandidateGrid } from '../components/CandidateGrid';
 import { DecisionTape } from '../components/DecisionTape';
 import { ProofPanel } from '../components/ProofPanel';
@@ -49,7 +49,6 @@ function Toggle({
 }
 
 export function TrustAwareAgentDetail() {
-  const [intent, setIntent] = useState(DEFAULT_INTENT);
   const [policy, setPolicy] = useState<TrustPolicy>(DEFAULT_POLICY);
   const [trace, setTrace] = useState<TraceEvent[]>([]);
   const [result, setResult] = useState<TrustedFetchResult | null>(null);
@@ -60,8 +59,7 @@ export function TrustAwareAgentDetail() {
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
   const [tampered, setTampered] = useState(false);
-  async function runAgent(event: FormEvent) {
-    event.preventDefault();
+  async function runAgent() {
     setRunning(true);
     setError('');
     setTrace([]);
@@ -73,7 +71,7 @@ export function TrustAwareAgentDetail() {
 
     try {
       const nextResult = await trustedFetch({
-        intent,
+        intent: DEFAULT_INTENT,
         policy,
         onTrace: (nextEvent) => {
           setTrace((current) => [
@@ -145,7 +143,7 @@ export function TrustAwareAgentDetail() {
         <div>
           <article>
             <span>1 · First-party</span>
-            <p>Nodary runs and signs its own ETH/USD feed, so the demo tries it first.</p>
+            <p><a className="provider-link" href="https://nodary.io/" target="_blank" rel="noreferrer">Nodary</a> runs and signs its own ETH/USD feed, so the demo tries it first.</p>
           </article>
           <article>
             <span>2 · API3-maintained</span>
@@ -163,16 +161,17 @@ export function TrustAwareAgentDetail() {
         <p>A signature proves provenance and integrity, not that a market price is objectively true.</p>
       </section>
 
-      <form className="prompt-card" onSubmit={runAgent}>
-        <label htmlFor="intent">Agent request</label>
+      <section className="prompt-card" aria-labelledby="agent-request-label">
+        <span className="prompt-label" id="agent-request-label">Example agent request</span>
         <div className="prompt-row">
-          <textarea
-            id="intent"
-            onChange={(event) => setIntent(event.target.value)}
-            rows={2}
-            value={intent}
-          />
-          <button className="run-button" disabled={running} type="submit">
+          <p className="agent-request-copy">{DEFAULT_INTENT}</p>
+          <button
+            aria-busy={running}
+            className="run-button"
+            disabled={running}
+            onClick={runAgent}
+            type="button"
+          >
             {running ? 'Checking…' : 'Get verified price'}
           </button>
         </div>
@@ -225,7 +224,7 @@ export function TrustAwareAgentDetail() {
             </div>
           </div>
         </details>
-      </form>
+      </section>
 
       {!trace.length && !error && !visibleReceipt && (
         <section className="how-it-works" aria-labelledby="how-title">
@@ -248,7 +247,11 @@ export function TrustAwareAgentDetail() {
       )}
 
       {(running || trace.length > 0) && (
-        <DecisionTape trace={trace} running={running} />
+        <DecisionTape
+          blocked={visibleVerification?.valid === false}
+          trace={trace}
+          running={running}
+        />
       )}
 
       {error && (
@@ -258,8 +261,8 @@ export function TrustAwareAgentDetail() {
             <strong>Your agent did not receive an unverified price.</strong>
             <p>{error}</p>
           </div>
-          <button onClick={() => setIntent(DEFAULT_INTENT)} type="button">
-            Restore sample
+          <button onClick={runAgent} type="button">
+            Try again
           </button>
         </section>
       )}

@@ -247,7 +247,7 @@ export function DisasterEvidenceMapDetail() {
       <section className="demo-workbench disaster-workbench" aria-live="polite">
         <div className="workbench-toolbar">
           <div><strong>Pacific event scan</strong><span>8 NASA events · 8 largest recent earthquakes · GeoDB city</span></div>
-          <button className="workbench-run" disabled={running} onClick={scanEvents} type="button">
+          <button aria-busy={running} className="workbench-run" disabled={running} onClick={scanEvents} type="button">
             {running ? 'Verifying event feeds…' : 'Scan signed event feeds'}
           </button>
         </div>

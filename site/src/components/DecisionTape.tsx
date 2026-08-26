@@ -55,32 +55,40 @@ function runningCopy(event?: TraceEvent): { title: string; detail: string } {
 export function DecisionTape({
   trace,
   running,
+  blocked = false,
 }: {
   trace: TraceEvent[];
   running: boolean;
+  blocked?: boolean;
 }) {
   const latest = trace.at(-1);
-  const completed = trace.some(
+  const traceCompleted = trace.some(
     (event) => event.stage === 'verify' && event.status === 'success',
   );
-  const failed = trace.some((event) => event.status === 'error');
+  const failed = blocked || trace.some((event) => event.status === 'error');
+  const released = traceCompleted && !failed;
   const warning = trace.some((event) => event.status === 'warning');
   const current = runningCopy(latest);
-  const gateState = failed ? 'blocked' : completed ? 'open' : 'locked';
+  const gateState = failed ? 'blocked' : released ? 'open' : 'locked';
 
   return (
     <section className="progress-card" aria-label="Agent progress" aria-live="polite">
       <div className="progress-copy">
-        <span className={`progress-orb ${running ? 'is-live' : ''}`} aria-hidden="true">
-          {failed ? '×' : completed ? '✓' : running ? '' : warning ? '!' : '·'}
+        <span
+          className={`progress-orb ${running ? 'is-live' : ''} ${failed ? 'is-failed' : ''}`}
+          aria-hidden="true"
+        >
+          {failed ? '×' : released ? '✓' : running ? '' : warning ? '!' : '·'}
         </span>
         <div>
           <strong>
             {running
               ? current.title
-              : failed
+              : blocked
+                ? 'The verification gate blocked this price'
+                : failed
                 ? 'The price was not given to your agent'
-                : completed
+                : released
                   ? 'The price passed every check'
                   : warning
                     ? 'The demo used its known source list'
@@ -89,7 +97,11 @@ export function DecisionTape({
           <small>
             {running
               ? current.detail
-              : 'Your agent receives nothing until every check passes.'}
+              : blocked
+                ? 'The changed value was not released to the agent.'
+                : released
+                  ? 'The verified value is now available to the agent.'
+                : 'Your agent receives nothing until every check passes.'}
           </small>
         </div>
       </div>
@@ -101,20 +113,25 @@ export function DecisionTape({
         </div>
         <div className="gate-rail" aria-hidden="true"><i /></div>
         <div className="gate-core">
-          <i aria-hidden="true">{failed ? '×' : completed ? '✓' : ''}</i>
-          <span><strong>Verification gate</strong><small>{failed ? 'Blocked invalid input' : completed ? 'Released verified input' : 'Locked until checks pass'}</small></span>
+          <i aria-hidden="true">{failed ? '×' : released ? '✓' : ''}</i>
+          <span><strong>Verification gate</strong><small>{failed ? 'Blocked invalid input' : released ? 'Released verified input' : 'Locked until checks pass'}</small></span>
         </div>
         <div className="gate-rail gate-rail--output" aria-hidden="true"><i /></div>
         <div className="gate-agent">
           <i aria-hidden="true">A</i>
-          <span><strong>AI agent</strong><small>{completed ? 'Input available' : 'No input yet'}</small></span>
+          <span><strong>AI agent</strong><small>{released ? 'Input available' : failed ? 'Input blocked' : 'No input yet'}</small></span>
         </div>
       </div>
 
       <ol className="progress-path">
         {STAGES.map((stage) => {
           const events = trace.filter((event) => event.stage === stage.key);
-          const status = events.at(-1)?.status ?? 'idle';
+          const status = blocked && stage.key === 'verify'
+            ? 'error'
+            : events.at(-1)?.status ?? 'idle';
+          const label = stage.key === 'discover' && status === 'warning'
+            ? 'Use known sources'
+            : stage.label;
           return (
             <li className={`progress-step progress-step--${status}`} key={stage.key}>
               <i aria-hidden="true">
@@ -126,7 +143,7 @@ export function DecisionTape({
                       ? '×'
                       : ''}
               </i>
-              <span>{stage.label}</span>
+              <span>{label}</span>
             </li>
           );
         })}

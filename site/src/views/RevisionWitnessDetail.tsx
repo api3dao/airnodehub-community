@@ -138,7 +138,7 @@ export function RevisionWitnessDetail() {
         <div className="workbench-toolbar">
           <div><strong>Signed price snapshots</strong><span>{snapshots.length} of 2 captured · held for this comparison</span></div>
           {snapshots.length > 0 && <button className="toolbar-text-action" onClick={clearSnapshots} type="button">Clear local history</button>}
-          <button className="workbench-run" disabled={running} onClick={captureSnapshot} type="button">
+          <button aria-busy={running} className="workbench-run" disabled={running} onClick={captureSnapshot} type="button">
             {running ? 'Verifying snapshot…' : snapshots.length === 0 ? 'Capture snapshot A' : snapshots.length === 1 ? 'Capture snapshot B' : 'Capture next snapshot'}
           </button>
         </div>
@@ -195,18 +195,30 @@ export function RevisionWitnessDetail() {
             <div className="revision-summary">
               <div className="revision-current">
                 <span>Latest accepted ETH/USD</span>
-                <strong>{formatPrice(latest.normalized.value)}</strong>
+                <strong
+                  className={`value-flash ${delta === null || delta === 0 ? '' : delta > 0 ? 'value-flash--up' : 'value-flash--down'}`}
+                  key={latest.call.attestation.signature}
+                >
+                  {formatPrice(latest.normalized.value)}
+                </strong>
                 <p>Nodary · signer {shortAddress(latest.call.attestation.airnode)}</p>
                 <VerificationStamp ageSeconds={latest.call.verification.ageSeconds} provenance="first-party" />
               </div>
               <div className={`revision-diff-state ${delta !== null && delta !== 0 ? 'has-changes' : ''}`}>
                 <i>{!previous ? 'A' : delta === 0 ? '＝' : delta && delta > 0 ? '↗' : '↘'}</i>
                 <span>
-                  <strong>{!previous
-                    ? 'Snapshot A recorded'
-                    : delta === 0
-                      ? 'The verified price is unchanged'
-                      : `${formatDelta(delta ?? 0)} (${formatPercentage(percentageDelta ?? 0)})`}</strong>
+                  <strong
+                    className={previous
+                      ? `value-flash ${delta === 0 ? '' : delta && delta > 0 ? 'value-flash--up' : 'value-flash--down'}`
+                      : undefined}
+                    key={latest.call.attestation.signature}
+                  >
+                    {!previous
+                      ? 'Snapshot A recorded'
+                      : delta === 0
+                        ? 'The verified price is unchanged'
+                        : `${formatDelta(delta ?? 0)} (${formatPercentage(percentageDelta ?? 0)})`}
+                  </strong>
                   <small>{!previous
                     ? 'Capture snapshot B to calculate a signed change.'
                     : `${elapsedMilliseconds === null ? '' : formatElapsed(elapsedMilliseconds)} · both receipts verified independently.`}</small>

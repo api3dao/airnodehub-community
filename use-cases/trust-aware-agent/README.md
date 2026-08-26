@@ -6,7 +6,7 @@ A browser demo that requests ETH/USD, tries the highest-priority eligible source
 
 The preferred order is:
 
-1. **First-party** — Nodary is provider-operated and provider-signed, so the demo tries it first.
+1. **First-party** — [Nodary](https://nodary.io/) is provider-operated and provider-signed, so the demo tries it first.
 2. **API3-maintained** — the next-best tier; no eligible ETH/USD candidate is currently listed in this demo.
 3. **Third-party** — CoinGecko and TickerLayer relay listings are fallbacks.
 

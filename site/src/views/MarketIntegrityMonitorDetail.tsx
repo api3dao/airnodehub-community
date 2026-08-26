@@ -158,7 +158,7 @@ export function MarketIntegrityMonitorDetail() {
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="market-demo-title">
         <h2 id="market-demo-title">One reference, three receipts</h2>
-        <p>Nodary is the first-party reference. Other verified prices are measured against it.</p>
+        <p><a className="provider-link" href="https://nodary.io/" target="_blank" rel="noreferrer">Nodary</a> is the first-party reference. Other verified prices are measured against it.</p>
       </section>
 
       <section className="demo-workbench market-workbench" aria-live="polite">
@@ -175,7 +175,7 @@ export function MarketIntegrityMonitorDetail() {
               <option value={2}>2%</option>
             </select>
           </label>
-          <button className="workbench-run" disabled={running} onClick={compareSources} type="button">
+          <button aria-busy={running} className="workbench-run" disabled={running} onClick={compareSources} type="button">
             {running ? 'Checking three sources…' : 'Compare signed prices'}
           </button>
         </div>
@@ -206,9 +206,9 @@ export function MarketIntegrityMonitorDetail() {
         {nodaryReference && marketMedian !== null && (
           <>
             <div className="market-summary">
-              <div><span>Nodary reference</span><strong>${nodaryReference.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
+              <div><span>Nodary reference</span><strong className="value-flash" key={nodaryReference.call.attestation.signature}>${nodaryReference.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
               <div><span>Accepted inputs</span><strong>{accepted.length} / {PRICE_CATALOG.length}</strong></div>
-              <div><span>Verified median</span><strong>${marketMedian.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
+              <div><span>Verified median</span><strong className="value-flash" key={accepted.map((result) => result.call.attestation.signature).join(':')}>${marketMedian.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
             </div>
             <MarketRangePlot results={accepted} reference={nodaryReference.normalized.value} threshold={threshold} />
           </>
@@ -230,7 +230,7 @@ export function MarketIntegrityMonitorDetail() {
                     <i className={`source-dot source-dot--${result.candidate.attestation}`} />
                     <span><strong>{sourceName(result.candidate.listing)}</strong><small>{result.candidate.attestation === 'first-party' ? 'Original provider' : 'Third-party relay'}</small></span>
                   </div>
-                  <strong className="ledger-price">
+                  <strong className={`ledger-price ${result.normalized ? 'value-flash' : ''}`}>
                     {result.normalized ? `$${result.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : 'Excluded'}
                   </strong>
                   <span className={`ledger-deviation ${flagged ? 'is-flagged' : ''}`}>
