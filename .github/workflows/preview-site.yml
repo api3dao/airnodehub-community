@@ -9,13 +9,14 @@ concurrency:
   group: pages-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   build:
     name: Test and build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -56,31 +57,136 @@ jobs:
     needs: build
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    env:
+      PREVIEW_PROJECT: airnodehub-community-pr-${{ github.event.pull_request.number }}
     permissions:
       actions: read
-      contents: read
-      deployments: write
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+      project-subdomain: ${{ steps.project.outputs.subdomain }}
     steps:
       - name: Download static preview
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           name: pages-preview
-          path: preview/dist
+          path: ${{ runner.temp }}/pages-preview/dist
 
       - name: Enforce static-only preview
         shell: bash
+        env:
+          PREVIEW_DIR: ${{ runner.temp }}/pages-preview/dist
         run: |
-          test -f preview/dist/index.html
-          test -z "$(find preview/dist -type l -print -quit)"
-          test -z "$(find preview/dist -name '_worker.*' -print -quit)"
+          test -f "${PREVIEW_DIR}/index.html"
+          test -z "$(find "${PREVIEW_DIR}" -type l -print -quit)"
+          test -z "$(find "${PREVIEW_DIR}" -name '_worker.*' -print -quit)"
+
+      - name: Ensure isolated Pages project
+        id: project
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]
+
+          project_endpoint="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PREVIEW_PROJECT}"
+          response_file="${RUNNER_TEMP}/pages-project.json"
+          status="$(curl --silent --show-error --output "${response_file}" --write-out "%{http_code}" \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "${project_endpoint}")"
+
+          if [[ "${status}" == "200" ]]; then
+            jq --exit-status --arg name "${PREVIEW_PROJECT}" \
+              '.success == true and .result.name == $name' "${response_file}" > /dev/null
+          elif [[ "${status}" == "404" ]]; then
+            request_file="${RUNNER_TEMP}/pages-project-request.json"
+            jq --null-input --arg name "${PREVIEW_PROJECT}" \
+              '{name: $name, production_branch: "main"}' > "${request_file}"
+            curl --fail-with-body --silent --show-error --output "${response_file}" \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data-binary "@${request_file}" \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects"
+            jq --exit-status --arg name "${PREVIEW_PROJECT}" \
+              '.success == true and .result.name == $name' "${response_file}" > /dev/null
+          else
+            jq '{errors, messages}' "${response_file}"
+            exit 1
+          fi
+
+          subdomain="$(jq --raw-output '.result.subdomain' "${response_file}")"
+          [[ "${subdomain}" =~ ^${PREVIEW_PROJECT}(-[a-z0-9]+)?\.pages\.dev$ ]]
+          echo "subdomain=${subdomain}" >> "${GITHUB_OUTPUT}"
+
+      - name: Prepare clean deployer
+        run: mkdir -p "${RUNNER_TEMP}/pages-deployer"
 
       - name: Deploy to Cloudflare Pages
+        id: deploy
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: npm
-          workingDirectory: preview
+          workingDirectory: ${{ runner.temp }}/pages-deployer
           wranglerVersion: "4.126.0"
-          command: pages deploy dist --project-name=airnodehub-community-preview --branch=pr-${{ github.event.pull_request.number }}
+          command: pages deploy ${{ runner.temp }}/pages-preview/dist --project-name=${{ env.PREVIEW_PROJECT }} --branch=preview --commit-hash=${{ github.sha }}
+
+  comment:
+    name: Comment preview
+    needs: deploy
+    if: needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add preview comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PREVIEW_URL: ${{ needs.deploy.outputs.preview-url }}
+          PROJECT_SUBDOMAIN: ${{ needs.deploy.outputs.project-subdomain }}
+        with:
+          script: |
+            const marker = '<!-- airnodehub-cloudflare-preview -->';
+            const prNumber = String(context.issue.number);
+            const expectedHost = `preview.${process.env.PROJECT_SUBDOMAIN}`;
+            const previewUrl = new URL(process.env.PREVIEW_URL);
+
+            if (!/^\d+$/.test(prNumber) || !process.env.PROJECT_SUBDOMAIN?.endsWith('.pages.dev') ||
+                previewUrl.protocol !== 'https:' || previewUrl.hostname !== expectedHost) {
+              core.setFailed('Cloudflare returned an unexpected preview URL.');
+              return;
+            }
+
+            const body = [
+              marker,
+              '### Cloudflare preview',
+              '',
+              `✅ [Open preview](${previewUrl.origin})`,
+              '',
+              `Updated for \`${context.payload.pull_request.head.sha.slice(0, 7)}\`. This public preview contains pull request content; do not enter credentials.`,
+            ].join('\n');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const previous = comments.find((comment) =>
+              comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker)
+            );
+
+            if (previous) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: previous.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
