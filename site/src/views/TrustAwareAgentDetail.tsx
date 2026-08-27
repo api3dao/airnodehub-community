@@ -60,6 +60,7 @@ export function TrustAwareAgentDetail() {
   const [running, setRunning] = useState(false);
   const [tampered, setTampered] = useState(false);
   async function runAgent() {
+    let verificationFailure = '';
     setRunning(true);
     setError('');
     setTrace([]);
@@ -74,6 +75,9 @@ export function TrustAwareAgentDetail() {
         intent: DEFAULT_INTENT,
         policy,
         onTrace: (nextEvent) => {
+          if (nextEvent.stage === 'verify' && nextEvent.status === 'error') {
+            verificationFailure = `${nextEvent.label}. ${nextEvent.detail}`;
+          }
           setTrace((current) => [
             ...current,
             { ...nextEvent, id: (current.at(-1)?.id ?? 0) + 1 },
@@ -85,8 +89,11 @@ export function TrustAwareAgentDetail() {
       setVisibleVerification(nextResult.trust);
     } catch (caught) {
       if (caught instanceof TrustedFetchError) {
-        setError(`${caught.code}: ${caught.message}`);
-        setFailedDecisions(caught.decisions ?? []);
+        const nextDecisions = caught.decisions ?? [];
+        setError(caught.code === 'VERIFICATION_FAILED' && verificationFailure
+          ? verificationFailure
+          : `${caught.code}: ${caught.message}`);
+        setFailedDecisions(nextDecisions);
       } else {
         setError(caught instanceof Error ? caught.message : String(caught));
       }
@@ -251,6 +258,7 @@ export function TrustAwareAgentDetail() {
           blocked={visibleVerification?.valid === false}
           trace={trace}
           running={running}
+          terminalFailure={Boolean(error)}
         />
       )}
 

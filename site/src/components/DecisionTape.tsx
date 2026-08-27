@@ -8,7 +8,7 @@ const STAGES: Array<{
   { key: 'evaluate', label: 'Pick one' },
   { key: 'inspect', label: 'Check source' },
   { key: 'call', label: 'Get price' },
-  { key: 'verify', label: 'Check signature' },
+  { key: 'verify', label: 'Verify response' },
 ];
 
 function runningCopy(event?: TraceEvent): { title: string; detail: string } {
@@ -44,8 +44,8 @@ function runningCopy(event?: TraceEvent): { title: string; detail: string } {
       detail: 'The chosen source is returning a price plus its signature.',
     },
     verify: {
-      title: 'Checking the signature…',
-      detail: 'Your browser is confirming that the response was not changed.',
+      title: 'Verifying the response…',
+      detail: 'Your browser is checking the request, signer, signature, and freshness.',
     },
   };
 
@@ -56,23 +56,57 @@ export function DecisionTape({
   trace,
   running,
   blocked = false,
+  terminalFailure = false,
 }: {
   trace: TraceEvent[];
   running: boolean;
   blocked?: boolean;
+  terminalFailure?: boolean;
 }) {
   const latest = trace.at(-1);
   const traceCompleted = trace.some(
     (event) => event.stage === 'verify' && event.status === 'success',
   );
-  const failed = blocked || trace.some((event) => event.status === 'error');
+  const failed = blocked
+    || terminalFailure
+    || (!traceCompleted && trace.some((event) => event.status === 'error'));
   const released = traceCompleted && !failed;
   const warning = trace.some((event) => event.status === 'warning');
   const current = runningCopy(latest);
   const gateState = failed ? 'blocked' : released ? 'open' : 'locked';
+  const activeStageIndex = running
+    ? STAGES.findIndex((stage) =>
+        trace.filter((event) => event.stage === stage.key).at(-1)?.status === 'running',
+      )
+    : -1;
+  const announcement = activeStageIndex >= 0
+    ? `${STAGES[activeStageIndex].label}, step ${activeStageIndex + 1} of ${STAGES.length}`
+    : failed
+      ? 'Verification failed'
+      : released
+        ? 'Verification completed'
+        : '';
 
   return (
-    <section className="progress-card" aria-label="Agent progress" aria-live="polite">
+    <section className="progress-card" aria-label="Agent progress">
+      <span
+        aria-atomic="true"
+        aria-live="polite"
+        role="status"
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {announcement}
+      </span>
       <div className="progress-copy">
         <span
           className={`progress-orb ${running ? 'is-live' : ''} ${failed ? 'is-failed' : ''}`}
@@ -126,14 +160,21 @@ export function DecisionTape({
       <ol className="progress-path">
         {STAGES.map((stage) => {
           const events = trace.filter((event) => event.stage === stage.key);
+          const latestStatus = events.at(-1)?.status ?? 'idle';
           const status = blocked && stage.key === 'verify'
             ? 'error'
-            : events.at(-1)?.status ?? 'idle';
+            : terminalFailure && latestStatus === 'running'
+              ? 'error'
+              : latestStatus;
           const label = stage.key === 'discover' && status === 'warning'
             ? 'Use known sources'
             : stage.label;
           return (
-            <li className={`progress-step progress-step--${status}`} key={stage.key}>
+            <li
+              aria-current={status === 'running' ? 'step' : undefined}
+              className={`progress-step progress-step--${status}`}
+              key={stage.key}
+            >
               <i aria-hidden="true">
                 {status === 'success'
                   ? '✓'

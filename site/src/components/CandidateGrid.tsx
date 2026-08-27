@@ -25,8 +25,10 @@ function decisionReason(decision: CandidateDecision): string {
       : 'Chosen because it ranked highest and every check passed.';
   }
   if (decision.status === 'eligible') return 'Available as a backup source.';
-  if (decision.status === 'failed') return 'The source call or one of its checks failed.';
-  return 'This source did not meet the current settings.';
+  if (decision.status === 'failed') {
+    return decision.reason.trim() || 'The source call or one of its checks failed.';
+  }
+  return decision.reason.trim() || 'This source did not meet the current settings.';
 }
 
 export function CandidateGrid({
