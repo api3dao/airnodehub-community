@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LiveCallLoading, ProjectDetailFrame, VerificationStamp } from '../components/ProjectDetailFrame';
+import type { LiveSourceStatus } from '../components/ProjectDetailFrame';
 import { callVerifiedListing, downloadJson } from '../lib';
 import { PRICE_CATALOG } from '../lib/catalog';
 import { normalizePrice } from '../lib/normalize';
@@ -64,6 +65,7 @@ function shortAddress(address: string): string {
 
 export function RevisionWitnessDetail() {
   const [snapshots, setSnapshots] = useState<PriceSnapshot[]>([]);
+  const [loadingSource, setLoadingSource] = useState<LiveSourceStatus>({ name: 'Nodary', status: 'waiting' });
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const latest = snapshots.at(-1) ?? null;
@@ -81,6 +83,7 @@ export function RevisionWitnessDetail() {
   async function captureSnapshot() {
     setRunning(true);
     setError('');
+    setLoadingSource({ name: 'Nodary', status: 'waiting' });
     try {
       const call = await callVerifiedListing(NODARY_SPEC, { maxAgeSeconds: 300 });
       if (latest && signedAtMilliseconds(call) <= signedAtMilliseconds(latest.call)) {
@@ -90,8 +93,10 @@ export function RevisionWitnessDetail() {
         ...snapshots,
         { call, normalized: normalizePrice(NODARY, call.attestation) },
       ].slice(-2);
+      setLoadingSource({ name: 'Nodary', status: 'verified', detail: 'Response verified' });
       setSnapshots(next);
     } catch (caught) {
+      setLoadingSource({ name: 'Nodary', status: 'failed', detail: 'Verification failed' });
       setError(caught instanceof Error ? caught.message : String(caught));
     } finally {
       setRunning(false);
@@ -134,10 +139,10 @@ export function RevisionWitnessDetail() {
         <p>Capture Nodary twice. Each click makes a separate live call and accepts the price only after local signature verification.</p>
       </section>
 
-      <section className="demo-workbench revision-workbench" aria-live="polite">
+      <section className="demo-workbench revision-workbench">
         <div className="workbench-toolbar">
           <div><strong>Signed price snapshots</strong><span>{snapshots.length} of 2 captured · held for this comparison</span></div>
-          {snapshots.length > 0 && <button className="toolbar-text-action" onClick={clearSnapshots} type="button">Clear local history</button>}
+          {snapshots.length > 0 && <button className="toolbar-text-action" disabled={running} onClick={clearSnapshots} type="button">Clear local history</button>}
           <button aria-busy={running} className="workbench-run" disabled={running} onClick={captureSnapshot} type="button">
             {running ? 'Verifying snapshot…' : snapshots.length === 0 ? 'Capture snapshot A' : snapshots.length === 1 ? 'Capture snapshot B' : 'Capture next snapshot'}
           </button>
@@ -147,7 +152,7 @@ export function RevisionWitnessDetail() {
           <LiveCallLoading
             title="Capturing a provider-signed ETH/USD price"
             detail="Your browser is calling Nodary and will keep the snapshot only if its request, signer, freshness, and signature all verify."
-            sources={['Nodary']}
+            sources={[loadingSource]}
           />
         )}
 
@@ -158,7 +163,7 @@ export function RevisionWitnessDetail() {
             <p>Call Nodary now for the baseline, then make a second live call to measure the real price change.</p>
           </div>
         )}
-        {error && <div className="workbench-error"><strong>Snapshot rejected</strong><span>{error}</span></div>}
+        {error && <div className="workbench-error" role="alert"><strong>Snapshot rejected</strong><span>{error}</span></div>}
 
         {latest && (
           <div id="evidence">
@@ -204,8 +209,8 @@ export function RevisionWitnessDetail() {
                 <p>Nodary · signer {shortAddress(latest.call.attestation.airnode)}</p>
                 <VerificationStamp ageSeconds={latest.call.verification.ageSeconds} provenance="first-party" />
               </div>
-              <div className={`revision-diff-state ${delta !== null && delta !== 0 ? 'has-changes' : ''}`}>
-                <i>{!previous ? 'A' : delta === 0 ? '＝' : delta && delta > 0 ? '↗' : '↘'}</i>
+              <div className={`revision-diff-state ${delta !== null && delta !== 0 ? 'has-changes' : ''}`} role="status">
+                <i aria-hidden="true">{!previous ? 'A' : delta === 0 ? '＝' : delta && delta > 0 ? '↗' : '↘'}</i>
                 <span>
                   <strong
                     className={previous

@@ -114,6 +114,12 @@ export function VerificationStamp({
   );
 }
 
+export interface LiveSourceStatus {
+  name: string;
+  status: 'waiting' | 'verified' | 'failed';
+  detail?: string;
+}
+
 export function LiveCallLoading({
   title,
   detail,
@@ -121,25 +127,41 @@ export function LiveCallLoading({
 }: {
   title: string;
   detail: string;
-  sources: readonly string[];
+  sources: readonly LiveSourceStatus[];
 }) {
+  const verified = sources.filter((source) => source.status === 'verified').length;
+  const failed = sources.filter((source) => source.status === 'failed').length;
+  const waiting = sources.length - verified - failed;
+
   return (
-    <section className="live-call-loading" aria-live="polite" role="status">
+    <section className="live-call-loading">
       <div className="live-loader-orbit" aria-hidden="true">
         <i className="live-loader-ring live-loader-ring--outer" />
         <i className="live-loader-ring live-loader-ring--inner" />
         <b />
       </div>
       <div className="live-loading-copy">
-        <span>Live API calls in progress</span>
+        <span aria-atomic="true" aria-live="polite" role="status">
+          {verified} verified · {failed} failed · {waiting} waiting
+        </span>
         <strong>{title}</strong>
         <p>{detail}</p>
         <div className="live-source-waitlist">
           {sources.map((source) => (
-            <span key={source}><i aria-hidden="true" />{source}<small>Waiting for signed response</small></span>
+            <span className={`is-${source.status}`} key={source.name}>
+              <i aria-hidden="true">{source.status === 'verified' ? '✓' : source.status === 'failed' ? '×' : '•'}</i>
+              {source.name}
+              <small>
+                {source.detail ?? (source.status === 'verified'
+                  ? 'Signed response verified'
+                  : source.status === 'failed'
+                    ? 'Response rejected'
+                    : 'Waiting for signed response')}
+              </small>
+            </span>
           ))}
         </div>
-        <div className="indeterminate-track" aria-hidden="true"><i /></div>
+        {waiting > 0 && <div className="indeterminate-track" aria-hidden="true"><i /></div>}
         <small>No backend is involved. This screen stays open while your browser waits and verifies locally.</small>
       </div>
     </section>

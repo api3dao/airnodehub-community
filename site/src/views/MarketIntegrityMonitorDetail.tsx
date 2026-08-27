@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { LiveCallLoading, ProjectDetailFrame, VerificationStamp } from '../components/ProjectDetailFrame';
+import {
+  LiveCallLoading,
+  ProjectDetailFrame,
+  VerificationStamp,
+  type LiveSourceStatus,
+} from '../components/ProjectDetailFrame';
 import { PRICE_CATALOG } from '../lib/catalog';
 import { normalizePrice } from '../lib/normalize';
 import { callVerifiedListing, downloadJson } from '../lib';
@@ -88,6 +93,7 @@ function MarketRangePlot({
 export function MarketIntegrityMonitorDetail() {
   const [results, setResults] = useState<MarketResult[]>([]);
   const [running, setRunning] = useState(false);
+  const [sourceStatuses, setSourceStatuses] = useState<LiveSourceStatus[]>([]);
   const [threshold, setThreshold] = useState(1);
 
   const accepted = results.filter(
@@ -120,14 +126,34 @@ export function MarketIntegrityMonitorDetail() {
   async function compareSources() {
     setRunning(true);
     setResults([]);
+    setSourceStatuses(PRICE_CATALOG.map((candidate) => ({
+      name: sourceName(candidate.listing),
+      status: 'waiting',
+    })));
     const settled = await Promise.allSettled(
       PRICE_CATALOG.map(async (candidate) => {
-        const call = await callVerifiedListing(toSpec(candidate), { maxAgeSeconds: 300 });
-        return {
-          candidate,
-          call,
-          normalized: normalizePrice(candidate, call.attestation),
-        };
+        const name = sourceName(candidate.listing);
+        try {
+          const call = await callVerifiedListing(toSpec(candidate), { maxAgeSeconds: 300 });
+          const result = {
+            candidate,
+            call,
+            normalized: normalizePrice(candidate, call.attestation),
+          };
+          setSourceStatuses((sources) => sources.map((source) =>
+            source.name === name ? { name, status: 'verified' } : source));
+          return result;
+        } catch (error) {
+          setSourceStatuses((sources) => sources.map((source) =>
+            source.name === name
+              ? {
+                  name,
+                  status: 'failed',
+                  detail: error instanceof Error ? error.message : String(error),
+                }
+              : source));
+          throw error;
+        }
       }),
     );
     setResults(
@@ -161,7 +187,7 @@ export function MarketIntegrityMonitorDetail() {
         <p><a className="provider-link" href="https://nodary.io/" target="_blank" rel="noreferrer">Nodary</a> is the first-party reference. Other verified prices are measured against it.</p>
       </section>
 
-      <section className="demo-workbench market-workbench" aria-live="polite">
+      <section className="demo-workbench market-workbench">
         <div className="workbench-toolbar">
           <div>
             <strong>ETH / USD</strong>
@@ -184,7 +210,7 @@ export function MarketIntegrityMonitorDetail() {
           <LiveCallLoading
             title="Checking Nodary and two comparison sources"
             detail="The browser verifies every response before measuring other prices against the first-party Nodary reference."
-            sources={['Nodary', 'CoinGecko', 'TickerLayer']}
+            sources={sourceStatuses}
           />
         )}
 
@@ -205,7 +231,7 @@ export function MarketIntegrityMonitorDetail() {
 
         {nodaryReference && marketMedian !== null && (
           <>
-            <div className="market-summary">
+            <div className="market-summary" role="status">
               <div><span>Nodary reference</span><strong className="value-flash" key={nodaryReference.call.attestation.signature}>${nodaryReference.normalized.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
               <div><span>Accepted inputs</span><strong>{accepted.length} / {PRICE_CATALOG.length}</strong></div>
               <div><span>Verified median</span><strong className="value-flash" key={accepted.map((result) => result.call.attestation.signature).join(':')}>${marketMedian.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></div>
