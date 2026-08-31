@@ -8,6 +8,7 @@ import {
   useMap,
 } from 'react-leaflet';
 import { LiveCallLoading, ProjectDetailFrame, VerificationStamp } from '../components/ProjectDetailFrame';
+import type { LiveSourceStatus } from '../components/ProjectDetailFrame';
 import { callVerifiedListing, downloadJson } from '../lib';
 import type { ListingCallSpec, VerifiedCall } from '../lib';
 import { haversineKilometers } from '../lib/useCases';
@@ -89,6 +90,12 @@ interface EvidenceMarker {
   alert: boolean;
 }
 
+const LOADING_SOURCES: LiveSourceStatus[] = [
+  { name: EONET_SPEC.name, status: 'waiting' },
+  { name: USGS_SPEC.name, status: 'waiting' },
+  { name: GEODB_SPEC.name, status: 'waiting' },
+];
+
 function markerColor(marker: EvidenceMarker): string {
   if (marker.alert) return '#8b423a';
   if (marker.kind === 'watch-area') return '#355b42';
@@ -115,6 +122,7 @@ export function DisasterEvidenceMapDetail() {
   const [calls, setCalls] = useState<VerifiedCall[]>([]);
   const [markers, setMarkers] = useState<EvidenceMarker[]>([]);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const [loadingSources, setLoadingSources] = useState<LiveSourceStatus[]>(LOADING_SOURCES);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
 
@@ -142,13 +150,33 @@ export function DisasterEvidenceMapDetail() {
     setCalls([]);
     setMarkers([]);
     setSelectedMarkerId(null);
+    setLoadingSources(LOADING_SOURCES);
+
+    async function callFeed<T>(spec: ListingCallSpec): Promise<VerifiedCall<T>> {
+      try {
+        const call = await callVerifiedListing<T>(spec);
+        setLoadingSources((sources) => sources.map((source) => source.name === spec.name
+          ? { ...source, status: 'verified', detail: 'Response verified' }
+          : source));
+        return call;
+      } catch (caught) {
+        setLoadingSources((sources) => sources.map((source) => source.name === spec.name
+          ? { ...source, status: 'failed', detail: caught instanceof Error ? caught.message : 'Verification failed' }
+          : source));
+        throw caught;
+      }
+    }
 
     try {
-      const [eonet, usgs, geodb] = await Promise.all([
-        callVerifiedListing<EonetData>(EONET_SPEC),
-        callVerifiedListing<UsgsData>(USGS_SPEC),
-        callVerifiedListing<GeoDbData>(GEODB_SPEC),
+      const [eonetResult, usgsResult, geodbResult] = await Promise.allSettled([
+        callFeed<EonetData>(EONET_SPEC),
+        callFeed<UsgsData>(USGS_SPEC),
+        callFeed<GeoDbData>(GEODB_SPEC),
       ]);
+      if (eonetResult.status === 'rejected') throw eonetResult.reason;
+      if (usgsResult.status === 'rejected') throw usgsResult.reason;
+      if (geodbResult.status === 'rejected') throw geodbResult.reason;
+      const [eonet, usgs, geodb] = [eonetResult.value, usgsResult.value, geodbResult.value];
       const city = geodb.attestation.data.data;
       if (
         !city ||
@@ -244,10 +272,10 @@ export function DisasterEvidenceMapDetail() {
         <p>Alert when a strong earthquake or active NASA event falls within 1,500 km of the verified city point.</p>
       </section>
 
-      <section className="demo-workbench disaster-workbench" aria-live="polite">
+      <section className="demo-workbench disaster-workbench">
         <div className="workbench-toolbar">
           <div><strong>Pacific event scan</strong><span>8 NASA events · 8 largest recent earthquakes · GeoDB city</span></div>
-          <button className="workbench-run" disabled={running} onClick={scanEvents} type="button">
+          <button aria-busy={running} className="workbench-run" disabled={running} onClick={scanEvents} type="button">
             {running ? 'Verifying event feeds…' : 'Scan signed event feeds'}
           </button>
         </div>
@@ -256,7 +284,7 @@ export function DisasterEvidenceMapDetail() {
           <LiveCallLoading
             title="Building the map from three signed feeds"
             detail="Event, earthquake, and city responses are arriving independently. The map unlocks only when all three pass local verification."
-            sources={['NASA EONET', 'USGS', 'GeoDB']}
+            sources={loadingSources}
           />
         )}
 
@@ -267,7 +295,7 @@ export function DisasterEvidenceMapDetail() {
             <p>The map appears only after all three live responses pass request, signer, signature, and freshness checks.</p>
           </div>
         )}
-        {error && <div className="workbench-error"><strong>Scan stopped</strong><span>{error}</span></div>}
+        {error && <div className="workbench-error" role="alert"><strong>Scan stopped</strong><span>{error}</span></div>}
 
         {calls.length === 3 && (
           <div className="evidence-map-layout" id="evidence">
@@ -323,8 +351,8 @@ export function DisasterEvidenceMapDetail() {
                   );
                 })}
               </MapContainer>
-              <div className={`map-alert-summary ${alerts.length ? 'has-alerts' : ''}`}>
-                <i>{alerts.length ? '!' : '✓'}</i>
+              <div className={`map-alert-summary ${alerts.length ? 'has-alerts' : ''}`} role="status">
+                <i aria-hidden="true">{alerts.length ? '!' : '✓'}</i>
                 <span><strong>{alerts.length ? `${alerts.length} trusted alerts` : 'No events crossed the rule'}</strong><small>Derived only from {calls.length} verified receipts</small></span>
               </div>
               <div className="map-legend" aria-hidden="true">
@@ -335,6 +363,18 @@ export function DisasterEvidenceMapDetail() {
             </div>
 
             <aside className="marker-inspector">
+              <label className="marker-select" htmlFor="evidence-marker-select">
+                <span>Inspect marker</span>
+                <select
+                  id="evidence-marker-select"
+                  onChange={(event) => setSelectedMarkerId(event.target.value)}
+                  value={selectedMarkerId ?? ''}
+                >
+                  {markers.map((marker) => (
+                    <option key={marker.id} value={marker.id}>{marker.title}</option>
+                  ))}
+                </select>
+              </label>
               {selectedMarker && selectedCall && (
                 <>
                   <span>{selectedMarker.source}</span>

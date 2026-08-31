@@ -80,7 +80,7 @@ export interface NormalizedPrice {
   sourceAgeSeconds: number | null;
 }
 
-export type DiscoveryMode = 'resolver' | 'catalog-fallback';
+export type DiscoveryMode = 'resolver' | 'resolver+catalog' | 'catalog-fallback';
 
 export interface Receipt {
   schemaVersion: '1.0';

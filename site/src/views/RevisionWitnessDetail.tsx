@@ -1,97 +1,102 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { LiveCallLoading, ProjectDetailFrame, VerificationStamp } from '../components/ProjectDetailFrame';
+import type { LiveSourceStatus } from '../components/ProjectDetailFrame';
 import { callVerifiedListing, downloadJson } from '../lib';
+import { PRICE_CATALOG } from '../lib/catalog';
+import { normalizePrice } from '../lib/normalize';
 import type { ListingCallSpec, VerifiedCall } from '../lib';
-import { diffJson } from '../lib/useCases';
+import type { NormalizedPrice } from '../lib/types';
 
-const STORAGE_KEY = 'airnodehub-community.revision-witness.v1';
+const NODARY = (() => {
+  const candidate = PRICE_CATALOG.find((entry) => entry.listing === 'nodary');
+  if (!candidate) throw new Error('The Nodary price listing is unavailable.');
+  return candidate;
+})();
 
-const WIKIDATA_SPEC: ListingCallSpec = {
-  id: 'wikidata',
-  name: 'Wikidata',
-  url: 'https://airnode-wikidata.fly.dev/',
-  operation: 'getItemStatements',
-  address: '0x9262c0d8cb7d5ccb708ffeA4893103aCb3c273E2',
-  provenance: 'third-party',
-  parameters: { item_id: 'Q64', property: 'P1082' },
+const NODARY_SPEC: ListingCallSpec = {
+  id: NODARY.listing,
+  name: 'Nodary',
+  url: NODARY.airnode,
+  operation: NODARY.operation,
+  address: NODARY.address,
+  provenance: NODARY.attestation,
+  parameters: NODARY.example,
 };
 
-interface WikidataStatementData {
-  P1082?: Array<{
-    id?: string;
-    rank?: string;
-    qualifiers?: Array<{
-      property?: { id?: string };
-      value?: { content?: { time?: string } };
-    }>;
-    value?: { content?: { amount?: string } };
-  }>;
+interface PriceSnapshot {
+  call: VerifiedCall;
+  normalized: NormalizedPrice;
 }
 
-interface PopulationSummary {
-  latestPopulation: number | null;
-  asOf: string;
-  statementCount: number;
-  latestStatementId: string;
+function formatPrice(value: number): string {
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
 }
 
-interface RevisionSnapshot {
-  call: VerifiedCall<WikidataStatementData>;
-  summary: PopulationSummary;
-}
-
-function summarizePopulation(data: WikidataStatementData): PopulationSummary {
-  const statements = data.P1082 ?? [];
-  const dated = statements.flatMap((statement) => {
-    const time = statement.qualifiers?.find(
-      (qualifier) => qualifier.property?.id === 'P585',
-    )?.value?.content?.time;
-    const amount = Number(statement.value?.content?.amount);
-    if (!time || !Number.isFinite(amount)) return [];
-    return [{ time, amount, id: statement.id ?? 'unknown' }];
-  }).sort((left, right) => left.time.localeCompare(right.time));
-  const latest = dated.at(-1);
-
-  return {
-    latestPopulation: latest?.amount ?? null,
-    asOf: latest?.time.replace(/^\+/, '').slice(0, 10) ?? 'Unknown',
-    statementCount: statements.length,
-    latestStatementId: latest?.id ?? 'Unknown',
-  };
-}
-
-function loadSnapshots(): RevisionSnapshot[] {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-    return Array.isArray(saved) ? saved.slice(-6) as RevisionSnapshot[] : [];
-  } catch {
-    return [];
+function formatDelta(value: number): string {
+  if (value !== 0 && Math.abs(value) < 0.000001) {
+    return `${value > 0 ? '+' : '-'}<$0.000001`;
   }
+  return `${value > 0 ? '+' : value < 0 ? '-' : ''}${formatPrice(Math.abs(value))}`;
+}
+
+function formatPercentage(value: number): string {
+  if (value !== 0 && Math.abs(value) < 0.000001) {
+    return `${value > 0 ? '+' : '-'}<0.000001%`;
+  }
+  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+  return `${sign}${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 })}%`;
+}
+
+function signedAtMilliseconds(call: VerifiedCall): number {
+  return Number(call.attestation.timestamp) * 1000;
+}
+
+function formatElapsed(milliseconds: number): string {
+  const seconds = Math.max(0, Math.round(milliseconds / 1000));
+  if (seconds < 60) return `${seconds}s apart`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}m ${remainder}s apart`;
+}
+
+function shortAddress(address: string): string {
+  return `${address.slice(0, 8)}…${address.slice(-6)}`;
 }
 
 export function RevisionWitnessDetail() {
-  const [snapshots, setSnapshots] = useState<RevisionSnapshot[]>(loadSnapshots);
+  const [snapshots, setSnapshots] = useState<PriceSnapshot[]>([]);
+  const [loadingSource, setLoadingSource] = useState<LiveSourceStatus>({ name: 'Nodary', status: 'waiting' });
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const latest = snapshots.at(-1) ?? null;
   const previous = snapshots.at(-2) ?? null;
-  const changes = useMemo(
-    () => previous && latest ? diffJson(previous.summary, latest.summary, 'population') : [],
-    [latest, previous],
-  );
+  const delta = previous && latest
+    ? latest.normalized.value - previous.normalized.value
+    : null;
+  const percentageDelta = delta !== null && previous && previous.normalized.value !== 0
+    ? (delta / previous.normalized.value) * 100
+    : null;
+  const elapsedMilliseconds = previous && latest
+    ? signedAtMilliseconds(latest.call) - signedAtMilliseconds(previous.call)
+    : null;
 
   async function captureSnapshot() {
     setRunning(true);
     setError('');
+    setLoadingSource({ name: 'Nodary', status: 'waiting' });
     try {
-      const call = await callVerifiedListing<WikidataStatementData>(WIKIDATA_SPEC);
+      const call = await callVerifiedListing(NODARY_SPEC, { maxAgeSeconds: 300 });
+      if (latest && signedAtMilliseconds(call) <= signedAtMilliseconds(latest.call)) {
+        throw new Error('Nodary did not return a newer signed response. Wait a moment and capture again.');
+      }
       const next = [
         ...snapshots,
-        { call, summary: summarizePopulation(call.attestation.data) },
-      ].slice(-6);
+        { call, normalized: normalizePrice(NODARY, call.attestation) },
+      ].slice(-2);
+      setLoadingSource({ name: 'Nodary', status: 'verified', detail: 'Response verified' });
       setSnapshots(next);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch (caught) {
+      setLoadingSource({ name: 'Nodary', status: 'failed', detail: 'Verification failed' });
       setError(caught instanceof Error ? caught.message : String(caught));
     } finally {
       setRunning(false);
@@ -100,131 +105,154 @@ export function RevisionWitnessDetail() {
 
   function clearSnapshots() {
     setSnapshots([]);
-    localStorage.removeItem(STORAGE_KEY);
     setError('');
   }
 
-  const witnessBundle = latest ? {
+  const witnessBundle = previous && latest ? {
     schemaVersion: '1.0',
-    type: 'airnodehub.revision-witness',
-    subject: { item: 'Q64', property: 'P1082', label: 'Berlin population' },
+    type: 'airnodehub.verified-change-tracker',
+    subject: { pair: 'ETH/USD', source: 'Nodary', provenance: 'first-party' },
     snapshots,
-    latestDiff: changes,
+    comparison: {
+      valueDelta: delta,
+      percentageDelta,
+      elapsedMilliseconds,
+      changed: delta !== 0,
+    },
   } : null;
 
   return (
     <ProjectDetailFrame
       title="Verified Change Tracker"
-      tagline="Compare the same API response over time and keep signed evidence of what changed."
-      problem="Changing APIs usually expose only the current value, so applications lose proof of what the source returned before."
-      outcome="The first verified response becomes the before state. Every later response becomes an auditable after state with a field-level diff."
-      boundary="A relay attestation proves what was returned at capture time; it does not certify Wikidata as correct."
+      tagline="Capture two provider-signed ETH/USD prices and preserve exactly how the value changed."
+      problem="Price APIs expose the latest value, but an application may need proof of what the same source returned at two decision points."
+      outcome="Two separate Nodary calls become signed snapshot A and B, with their value delta, elapsed time, signer, and receipts kept together."
+      boundary="A Nodary attestation proves which value its Airnode returned at capture time; it does not guarantee that the market price cannot move or remain unchanged."
       prompt={{
         path: '/prompts/revision-witness.md',
-        title: 'Ask an agent to preserve a signed before-and-after record.',
-        description: 'This prompt repeats one Wikidata request over time and reports changes only from locally verified snapshots.',
+        title: 'Ask an agent to preserve a signed price change record.',
+        description: 'This prompt captures two verified Nodary ETH/USD values and reports the real delta without inventing a change.',
       }}
     >
       <section className="live-demo-heading" id="live-demo" aria-labelledby="revision-demo-title">
-        <h2 id="revision-demo-title">Track a live Wikidata record</h2>
-        <p>The API returns Berlin population statements. Capture the identical request again later to prove whether its response changed.</p>
+        <h2 id="revision-demo-title">Track a live ETH/USD price</h2>
+        <p>Capture Nodary twice. Each click makes a separate live call and accepts the price only after local signature verification.</p>
       </section>
 
-      <section className="demo-workbench revision-workbench" aria-live="polite">
+      <section className="demo-workbench revision-workbench">
         <div className="workbench-toolbar">
-          <div><strong>Snapshot history</strong><span>{snapshots.length} accepted · stored only in this browser</span></div>
-          {snapshots.length > 0 && <button className="toolbar-text-action" onClick={clearSnapshots} type="button">Clear local history</button>}
-          <button className="workbench-run" disabled={running} onClick={captureSnapshot} type="button">
-            {running ? 'Verifying snapshot…' : snapshots.length ? 'Capture next snapshot' : 'Capture first snapshot'}
+          <div><strong>Signed price snapshots</strong><span>{snapshots.length} of 2 captured · held for this comparison</span></div>
+          {snapshots.length > 0 && <button className="toolbar-text-action" disabled={running} onClick={clearSnapshots} type="button">Clear local history</button>}
+          <button aria-busy={running} className="workbench-run" disabled={running} onClick={captureSnapshot} type="button">
+            {running ? 'Verifying snapshot…' : snapshots.length === 0 ? 'Capture snapshot A' : snapshots.length === 1 ? 'Capture snapshot B' : 'Capture next snapshot'}
           </button>
         </div>
 
         {running && (
           <LiveCallLoading
-            title="Capturing a signed Wikidata snapshot"
-            detail="The exact Q64 / P1082 request is being repeated. It enters the timeline only if the live contract and signature match."
-            sources={['Wikidata']}
+            title="Capturing a provider-signed ETH/USD price"
+            detail="Your browser is calling Nodary and will keep the snapshot only if its request, signer, freshness, and signature all verify."
+            sources={[loadingSource]}
           />
         )}
 
         {!running && !latest && !error && (
           <div className="workbench-empty">
             <span className="empty-glyph">◷</span>
-            <strong>Capture the signed “before” state</strong>
-            <p>This first live response becomes the baseline. A later call becomes the “after” state, using the exact same request.</p>
+            <strong>Capture signed snapshot A</strong>
+            <p>Call Nodary now for the baseline, then make a second live call to measure the real price change.</p>
           </div>
         )}
-        {error && <div className="workbench-error"><strong>Snapshot rejected</strong><span>{error}</span></div>}
+        {error && <div className="workbench-error" role="alert"><strong>Snapshot rejected</strong><span>{error}</span></div>}
 
         {latest && (
           <div id="evidence">
-            <section className="witness-chain" aria-label="Signed snapshot continuity">
+            <section className="witness-chain" aria-label="Signed price snapshot comparison">
               <article className="witness-node">
-                <span>{previous ? 'Previous snapshot' : 'Baseline snapshot'}</span>
-                <strong>{(previous ?? latest).summary.latestPopulation?.toLocaleString('en-US') ?? 'Unknown'}</strong>
-                <small>Signed {new Date((previous ?? latest).call.receivedAt).toLocaleTimeString()}</small>
-                <code>{(previous ?? latest).call.attestation.signature.slice(0, 14)}…</code>
+                <span>Snapshot A · first-party</span>
+                <strong>{formatPrice((previous ?? latest).normalized.value)}</strong>
+                <small>Signed {new Date(signedAtMilliseconds((previous ?? latest).call)).toLocaleTimeString()}</small>
+                <code>Signer {shortAddress((previous ?? latest).call.attestation.airnode)}</code>
               </article>
               <div className={`witness-link ${previous ? 'is-linked' : ''}`}>
                 <i aria-hidden="true"><b /></i>
-                <span><strong>{previous ? 'Same request' : 'Waiting for next capture'}</strong><small>{latest.call.attestation.requestHash.slice(0, 12)}…</small></span>
+                <span>
+                  <strong>{previous && elapsedMilliseconds !== null ? formatElapsed(elapsedMilliseconds) : 'Waiting for snapshot B'}</strong>
+                  <small>{previous && delta !== null ? formatDelta(delta) : 'Separate live call'}</small>
+                </span>
               </div>
               {previous ? (
                 <article className="witness-node is-latest">
-                  <span>Latest snapshot</span>
-                  <strong>{latest.summary.latestPopulation?.toLocaleString('en-US') ?? 'Unknown'}</strong>
-                  <small>Signed {new Date(latest.call.receivedAt).toLocaleTimeString()}</small>
-                  <code>{latest.call.attestation.signature.slice(0, 14)}…</code>
+                  <span>Snapshot B · first-party</span>
+                  <strong>{formatPrice(latest.normalized.value)}</strong>
+                  <small>Signed {new Date(signedAtMilliseconds(latest.call)).toLocaleTimeString()}</small>
+                  <code>Signer {shortAddress(latest.call.attestation.airnode)}</code>
                 </article>
               ) : (
                 <article className="witness-node is-empty">
-                  <span>Next snapshot</span>
+                  <span>Snapshot B</span>
                   <strong>Not captured</strong>
-                  <small>Repeat the identical request later.</small>
+                  <small>Make a second live Nodary call.</small>
                 </article>
               )}
             </section>
 
             <div className="revision-summary">
               <div className="revision-current">
-                <span>Latest accepted value</span>
-                <strong>{latest.summary.latestPopulation?.toLocaleString('en-US') ?? 'Unknown'}</strong>
-                <p>Berlin population, statement dated {latest.summary.asOf}</p>
-                <VerificationStamp ageSeconds={latest.call.verification.ageSeconds} provenance="third-party" />
+                <span>Latest accepted ETH/USD</span>
+                <strong
+                  className={`value-flash ${delta === null || delta === 0 ? '' : delta > 0 ? 'value-flash--up' : 'value-flash--down'}`}
+                  key={latest.call.attestation.signature}
+                >
+                  {formatPrice(latest.normalized.value)}
+                </strong>
+                <p>Nodary · signer {shortAddress(latest.call.attestation.airnode)}</p>
+                <VerificationStamp ageSeconds={latest.call.verification.ageSeconds} provenance="first-party" />
               </div>
-              <div className={`revision-diff-state ${changes.length ? 'has-changes' : ''}`}>
-                <i>{previous ? changes.length ? '↗' : '＝' : '1'}</i>
+              <div className={`revision-diff-state ${delta !== null && delta !== 0 ? 'has-changes' : ''}`} role="status">
+                <i aria-hidden="true">{!previous ? 'A' : delta === 0 ? '＝' : delta && delta > 0 ? '↗' : '↘'}</i>
                 <span>
-                  <strong>{!previous ? '“Before” state recorded' : changes.length ? `${changes.length} fields changed` : 'The API response is unchanged'}</strong>
-                  <small>{!previous ? 'Capture again later to add the “after” state.' : 'Compared using both complete, verified API responses.'}</small>
+                  <strong
+                    className={previous
+                      ? `value-flash ${delta === 0 ? '' : delta && delta > 0 ? 'value-flash--up' : 'value-flash--down'}`
+                      : undefined}
+                    key={latest.call.attestation.signature}
+                  >
+                    {!previous
+                      ? 'Snapshot A recorded'
+                      : delta === 0
+                        ? 'The verified price is unchanged'
+                        : `${formatDelta(delta ?? 0)} (${formatPercentage(percentageDelta ?? 0)})`}
+                  </strong>
+                  <small>{!previous
+                    ? 'Capture snapshot B to calculate a signed change.'
+                    : `${elapsedMilliseconds === null ? '' : formatElapsed(elapsedMilliseconds)} · both receipts verified independently.`}</small>
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {changes.length > 0 && (
+        {previous && latest && delta !== null && (
           <div className="diff-table">
-            <div><span>Field</span><span>Before</span><span>After</span></div>
-            {changes.map((change) => (
-              <article key={change.path}>
-                <code>{change.path}</code>
-                <span>{String(change.before)}</span>
-                <strong>{String(change.after)}</strong>
-              </article>
-            ))}
+            <div><span>Value</span><span>Snapshot A</span><span>Snapshot B</span></div>
+            <article>
+              <code>ETH/USD</code>
+              <span>{formatPrice(previous.normalized.value)}</span>
+              <strong>{formatPrice(latest.normalized.value)}</strong>
+            </article>
           </div>
         )}
 
         {snapshots.length > 0 && (
           <div className="snapshot-timeline">
             {[...snapshots].reverse().map((snapshot, reverseIndex) => (
-              <article key={`${snapshot.call.attestation.requestHash}-${snapshot.call.attestation.timestamp}`}>
+              <article key={snapshot.call.attestation.signature}>
                 <i aria-hidden="true" />
                 <div>
-                  <span>{reverseIndex === 0 ? 'Latest' : `Snapshot ${snapshots.length - reverseIndex}`}</span>
-                  <strong>{snapshot.summary.latestPopulation?.toLocaleString('en-US') ?? 'Unknown'}</strong>
-                  <small>Captured {new Date(snapshot.call.receivedAt).toLocaleString()} · {snapshot.summary.statementCount} statements</small>
+                  <span>{snapshots.length === 1 || reverseIndex === 1 ? 'Snapshot A' : 'Snapshot B'}</span>
+                  <strong>{formatPrice(snapshot.normalized.value)}</strong>
+                  <small>Signed {new Date(signedAtMilliseconds(snapshot.call)).toLocaleString()} · first-party · signer {shortAddress(snapshot.call.attestation.airnode)}</small>
                 </div>
                 <code>{snapshot.call.attestation.requestHash.slice(0, 10)}…</code>
                 <details>
@@ -238,8 +266,8 @@ export function RevisionWitnessDetail() {
 
         {witnessBundle && (
           <div className="evidence-export">
-            <div><strong>Portable change record</strong><span>The identical request, both signed responses, and their field-level diff.</span></div>
-            <button onClick={() => downloadJson('verified-change-record.json', witnessBundle)} type="button">Download record</button>
+            <div><strong>Portable price change record</strong><span>Snapshot A and B, both complete receipts, their signer, capture times, and the observed delta.</span></div>
+            <button onClick={() => downloadJson('verified-price-change-record.json', witnessBundle)} type="button">Download record</button>
           </div>
         )}
       </section>

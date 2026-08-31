@@ -11,14 +11,14 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     title: 'Trust-Aware Agent',
     listings: ['Nodary', 'CoinGecko', 'TickerLayer'],
     outcome:
-      'Accept an ETH/USD value only after its signer, request, freshness, and derived price pass every check.',
+      'Prefer provider-run Nodary and release ETH/USD only after local verification.',
   },
   {
     slug: 'market-integrity-monitor',
-    title: 'Market Integrity Monitor',
+    title: 'Asset Price Monitor',
     listings: ['Nodary', 'CoinGecko', 'TickerLayer'],
     outcome:
-      'Compare signed prices while preserving a verification record for every source.',
+      'Use first-party Nodary as the reference and compare every verified relay against it.',
   },
   {
     slug: 'disaster-evidence-map',
@@ -30,8 +30,8 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
   {
     slug: 'revision-witness',
     title: 'Verified Change Tracker',
-    listings: ['Wikidata', 'Eurostat', 'ECB'],
+    listings: ['Nodary'],
     outcome:
-      'Compare the same live request over time and preserve both signed responses behind every change.',
+      'Compare two signed ETH/USD snapshots and preserve the receipt behind each value.',
   },
 ] as const;

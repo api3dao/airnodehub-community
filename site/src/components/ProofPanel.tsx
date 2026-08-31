@@ -50,20 +50,20 @@ export function ProofPanel({
       <div className="proof-heading">
         <div>
           <h2 id="proof-title">
-            {verification.valid ? 'Verified ETH price' : 'This price must be rejected'}
+            {verification.valid ? 'Verified ETH price' : 'Rejected ETH price'}
           </h2>
-          <span>{tampered ? 'Tampering demonstration' : 'Result for your AI agent'}</span>
+          <span>{tampered ? 'Tampering simulation' : 'Result for your AI agent'}</span>
         </div>
         <span className={`proof-badge ${verification.valid ? 'is-valid' : 'is-invalid'}`}>
           <i aria-hidden="true">{verification.valid ? '✓' : '×'}</i>
-          {verification.valid ? 'Signature valid' : 'Check failed'}
+          {verification.valid ? 'Signature valid' : 'Not released'}
         </span>
       </div>
 
       <div className="result-row">
         <div className="price-block">
-          <span>ETH / USD</span>
-          <strong>
+          <span>{verification.valid ? 'ETH / USD' : 'Rejected value · ETH / USD'}</span>
+          <strong className={tampered ? 'value-flash value-flash--down' : undefined} key={receipt.normalized.value}>
             <small>$</small>
             {receipt.normalized.value.toLocaleString('en-US', {
               minimumFractionDigits: 2,
@@ -71,17 +71,26 @@ export function ProofPanel({
             })}
           </strong>
           <p>
-            {directFromProvider
-              ? `${source} returned and signed this price ${verification.ageSeconds}s ago.`
-              : `The Airnode relay returned ${source} data and signed it ${verification.ageSeconds}s ago.`}
+            {!verification.valid
+              ? `This displayed value does not match the signed ${source} response.`
+              : directFromProvider
+                ? `${source} returned and signed this price ${verification.ageSeconds}s ago.`
+                : `The Airnode relay returned ${source} data and signed it ${verification.ageSeconds}s ago.`}
           </p>
         </div>
 
-        <div className="trust-message" role="status">
-          <span aria-hidden="true">{verification.valid ? '✓' : '×'}</span>
+        <div className="trust-message" role={verification.valid ? 'status' : 'alert'}>
+          <span aria-hidden="true">
+            {verification.valid ? '✓' : (
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m9 9 6 6m0-6-6 6" />
+              </svg>
+            )}
+          </span>
           <div>
             <strong>
-              {verification.valid ? 'Your agent can use this price' : 'Your agent must reject this price'}
+              {verification.valid ? 'Your agent can use this price' : 'Blocked from the agent'}
             </strong>
             <p>
               {verification.valid
@@ -101,7 +110,7 @@ export function ProofPanel({
           <i>{verification.checks.signature ? '✓' : '×'}</i><span>Browser checks</span>
         </li>
         <li className={verification.valid ? 'is-complete' : 'is-failed'}>
-          <i>{verification.valid ? '✓' : '×'}</i><span>Agent receives</span>
+          <i>{verification.valid ? '✓' : '×'}</i><span>{verification.valid ? 'Agent receives' : 'Agent blocked'}</span>
         </li>
       </ol>
 
@@ -119,17 +128,24 @@ export function ProofPanel({
       </dl>
 
       <div className="proof-actions">
-        <button className="primary-action" onClick={onDownload} type="button">
-          Download verification record
-        </button>
         {tampered ? (
-          <button className="secondary-action danger-action" onClick={onReset} type="button">
-            Restore original
-          </button>
+          <>
+            <button className="primary-action" onClick={onReset} type="button">
+              Restore verified price
+            </button>
+            <button className="secondary-action" onClick={onDownload} type="button">
+              Download verified record
+            </button>
+          </>
         ) : (
-          <button className="secondary-action" onClick={onTamper} type="button">
-            Change the price to test the checks
-          </button>
+          <>
+            <button className="primary-action" onClick={onDownload} type="button">
+              Download verification record
+            </button>
+            <button className="secondary-action" onClick={onTamper} type="button">
+              Simulate tampering
+            </button>
+          </>
         )}
       </div>
 

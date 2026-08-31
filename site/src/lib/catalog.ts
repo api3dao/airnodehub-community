@@ -59,6 +59,18 @@ export const SUPPORTED_LISTINGS = new Set(
   PRICE_CATALOG.map((candidate) => candidate.listing),
 );
 
+export function supplementPriceCandidates(candidates: Candidate[]): Candidate[] {
+  const discovered = new Set(
+    candidates.map((candidate) => `${candidate.listing}:${candidate.operation}`),
+  );
+  return [
+    ...candidates,
+    ...PRICE_CATALOG.filter(
+      (candidate) => !discovered.has(`${candidate.listing}:${candidate.operation}`),
+    ),
+  ];
+}
+
 export function supportsCatalogFallback(intent: string): boolean {
   const normalized = intent.toLowerCase();
   const asksForEth = /\b(eth|ethereum)\b/.test(normalized);

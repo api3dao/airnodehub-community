@@ -52,7 +52,7 @@ Open `http://localhost:5173/?project=disaster-evidence-map`.
 - Every marker exposes its source receipts and verification state.
 - Stale or invalid responses cannot create a trusted alert.
 - The geospatial derivation is reproducible from the preserved inputs.
-- Live and recorded-fixture modes are clearly labelled.
+- Live failures are shown without inventing trusted markers or alerts.
 
 ## Contribution scope
 
