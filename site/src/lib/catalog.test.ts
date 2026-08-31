@@ -6,6 +6,7 @@ describe('price candidate discovery', () => {
     const resolvedCoinGecko = {
       ...PRICE_CATALOG[1],
       why: 'Returned by the live resolver.',
+      origin: 'resolver' as const,
     };
     const candidates = supplementPriceCandidates([resolvedCoinGecko]);
 
@@ -15,5 +16,16 @@ describe('price candidate discovery', () => {
       'tickerlayer',
     ]);
     expect(candidates[0]).toBe(resolvedCoinGecko);
+  });
+
+  it('marks supplemented sources as demo additions rather than discoveries', () => {
+    const resolvedCoinGecko = { ...PRICE_CATALOG[1], origin: 'resolver' as const };
+    const candidates = supplementPriceCandidates([resolvedCoinGecko]);
+
+    expect(candidates.map((candidate) => candidate.origin)).toEqual([
+      'resolver',
+      'demo-catalog',
+      'demo-catalog',
+    ]);
   });
 });

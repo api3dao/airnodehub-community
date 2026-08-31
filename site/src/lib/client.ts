@@ -122,23 +122,29 @@ async function discover(
         );
       }
 
-      const usesPriceCatalog = supportsCatalogFallback(intent);
-      const candidates = usesPriceCatalog
-        ? supplementPriceCandidates(resolution.candidates)
-        : resolution.candidates;
+      const resolved: Candidate[] = resolution.candidates.map((candidate) => ({
+        ...candidate,
+        origin: 'resolver',
+      }));
+      const candidates = supportsCatalogFallback(intent)
+        ? supplementPriceCandidates(resolved)
+        : resolved;
+      const addedCount = candidates.length - resolved.length;
 
       emit(
         onTrace,
         'discover',
-        `${candidates.length} candidates discovered`,
-        usesPriceCatalog
-          ? 'The resolver matched the intent; the demo added its known ETH/USD sources for trust-policy ranking.'
+        addedCount
+          ? `${resolved.length} discovered, ${addedCount} added by the demo`
+          : `${resolved.length} candidates discovered`,
+        addedCount
+          ? 'The resolver returned the discovered sources. The demo added its own known ETH/USD sources so the trust policy can rank them, and marks them separately.'
           : 'Parameters, provenance, signer, and payment requirements came from the resolver.',
         'success',
       );
       return {
         candidates,
-        mode: usesPriceCatalog ? 'resolver+catalog' : 'resolver',
+        mode: addedCount ? 'resolver+catalog' : 'resolver',
         attempts: attempt,
       };
     } catch (error) {

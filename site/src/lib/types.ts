@@ -8,6 +8,8 @@ export interface PaymentRequirement {
   maxAmountRequired: string;
 }
 
+export type CandidateOrigin = 'resolver' | 'demo-catalog';
+
 export interface Candidate {
   listing: string;
   airnode: string;
@@ -19,11 +21,12 @@ export interface Candidate {
   returns: Record<string, string>;
   payment: PaymentRequirement | null;
   why: string;
+  origin: CandidateOrigin;
 }
 
 export interface Resolution {
   intent: string;
-  candidates: Candidate[];
+  candidates: Omit<Candidate, 'origin'>[];
 }
 
 export interface Attestation<T = unknown> {
