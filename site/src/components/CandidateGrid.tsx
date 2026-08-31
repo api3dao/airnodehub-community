@@ -54,7 +54,7 @@ export function CandidateGrid({
             {mode === 'catalog-fallback'
               ? 'Source search was unavailable, so the demo checked its built-in live source list.'
               : mode === 'resolver+catalog'
-                ? 'AirnodeHub matched the question; the demo ranked all three known ETH/USD sources.'
+                ? 'AirnodeHub matched the question. The demo also added its own known ETH/USD sources so the policy can rank them.'
               : mode === 'resolver'
                 ? 'AirnodeHub matched the question to live sources.'
                 : 'No source met the current settings.'}
@@ -78,6 +78,9 @@ export function CandidateGrid({
               <div className="source-copy">
                 <div>
                   <strong>{sourceLabel(decision.listing)}</strong>
+                  {candidate.origin === 'demo-catalog' && (
+                    <span className="source-origin">Added by the demo</span>
+                  )}
                   <span className={`source-status source-status--${decision.status}`}>
                     {decisionLabel(decision.status)}
                   </span>

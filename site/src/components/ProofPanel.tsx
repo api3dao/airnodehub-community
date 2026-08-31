@@ -63,7 +63,7 @@ export function ProofPanel({
       <div className="result-row">
         <div className="price-block">
           <span>{verification.valid ? 'ETH / USD' : 'Rejected value · ETH / USD'}</span>
-          <strong className={tampered ? 'value-flash value-flash--down' : undefined} key={receipt.normalized.value}>
+          <strong className={tampered ? 'value-flash value-flash--rejected' : undefined} key={receipt.normalized.value}>
             <small>$</small>
             {receipt.normalized.value.toLocaleString('en-US', {
               minimumFractionDigits: 2,

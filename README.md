@@ -2,7 +2,7 @@
 
 A human-facing catalog of small, runnable, frontend-only demonstrations built with live AirnodeHub operations. Each example is backed by a repository README and an agent-ready prompt.
 
-This community workspace is open to everyone and maintained by API3. Its projects focus on the part a normal API example often omits: how an application discovers a source, evaluates it, verifies the signed response locally, and carries the evidence forward.
+This community workspace is open to everyone and maintained by API3. It is not an official API3 product. Its projects focus on the part a normal API example often omits: how an application discovers a source, evaluates it, verifies the signed response locally, and carries the evidence forward.
 
 ## Architecture boundary
 
@@ -54,4 +54,4 @@ Browse the complete [use-case index](use-cases/README.md), inspect the proven [b
 
 ## Status
 
-Open to community contributions and maintained by API3.
+Open to community contributions and maintained by API3. Not an official API3 product.

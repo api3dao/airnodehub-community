@@ -1,6 +1,6 @@
 # AirnodeHub Community
 
-> An open catalog of runnable, frontend-only AirnodeHub use cases, maintained by API3 and built for community contribution.
+> An open catalog of runnable, frontend-only AirnodeHub use cases, maintained by API3 and built for community contribution. It is not an official API3 product.
 
 All demonstrations run in the browser without a proxy, database, account, or private API key. They use live AirnodeHub operations and expose the request, response, signer, verification result, and derived output.
 

@@ -19,6 +19,7 @@ export const PRICE_CATALOG: Candidate[] = [
     example: { name: 'ETH/USD' },
     returns: emptyReturns,
     payment: null,
+    origin: 'demo-catalog',
     why: 'First-party aggregated ETH/USD data from Nodary.',
   },
   {
@@ -36,6 +37,7 @@ export const PRICE_CATALOG: Candidate[] = [
     example: { ids: 'ethereum', vs_currencies: 'usd' },
     returns: emptyReturns,
     payment: null,
+    origin: 'demo-catalog',
     why: 'Current Ethereum price relayed from CoinGecko.',
   },
   {
@@ -51,6 +53,7 @@ export const PRICE_CATALOG: Candidate[] = [
     example: { assetClass: 'crypto', symbol: 'ETHUSD' },
     returns: emptyReturns,
     payment: null,
+    origin: 'demo-catalog',
     why: 'Latest ETH/USD trade relayed from TickerLayer.',
   },
 ];
