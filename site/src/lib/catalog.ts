@@ -58,20 +58,40 @@ export const PRICE_CATALOG: Candidate[] = [
   },
 ];
 
-export const SUPPORTED_LISTINGS = new Set(
-  PRICE_CATALOG.map((candidate) => candidate.listing),
+function candidateKey(
+  candidate: Pick<Candidate, 'listing' | 'operation'>,
+): string {
+  return `${candidate.listing}:${candidate.operation}`;
+}
+
+const PRICE_CATALOG_BY_KEY = new Map(
+  PRICE_CATALOG.map((candidate) => [candidateKey(candidate), candidate]),
 );
 
 export function supplementPriceCandidates(candidates: Candidate[]): Candidate[] {
+  const pinnedCandidates = candidates.map((candidate) => {
+    const pinned = PRICE_CATALOG_BY_KEY.get(candidateKey(candidate));
+    return pinned ? { ...pinned, origin: 'resolver' as const } : candidate;
+  });
   const discovered = new Set(
-    candidates.map((candidate) => `${candidate.listing}:${candidate.operation}`),
+    pinnedCandidates.map(candidateKey),
   );
   return [
-    ...candidates,
+    ...pinnedCandidates,
     ...PRICE_CATALOG.filter(
-      (candidate) => !discovered.has(`${candidate.listing}:${candidate.operation}`),
+      (candidate) => !discovered.has(candidateKey(candidate)),
     ),
   ];
+}
+
+export function isPinnedPriceCandidate(candidate: Candidate): boolean {
+  const pinned = PRICE_CATALOG_BY_KEY.get(candidateKey(candidate));
+  return Boolean(
+    pinned &&
+      candidate.airnode === pinned.airnode &&
+      candidate.address.toLowerCase() === pinned.address.toLowerCase() &&
+      candidate.attestation === pinned.attestation,
+  );
 }
 
 export function supportsCatalogFallback(intent: string): boolean {

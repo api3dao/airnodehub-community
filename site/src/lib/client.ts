@@ -126,7 +126,8 @@ async function discover(
         ...candidate,
         origin: 'resolver',
       }));
-      const candidates = supportsCatalogFallback(intent)
+      const hasPinnedPriceCatalog = supportsCatalogFallback(intent);
+      const candidates = hasPinnedPriceCatalog
         ? supplementPriceCandidates(resolved)
         : resolved;
       const addedCount = candidates.length - resolved.length;
@@ -138,7 +139,9 @@ async function discover(
           ? `${resolved.length} discovered, ${addedCount} added by the demo`
           : `${resolved.length} candidates discovered`,
         addedCount
-          ? 'The resolver returned the discovered sources. The demo added its own known ETH/USD sources so the trust policy can rank them, and marks them separately.'
+          ? 'Resolver matches use identities pinned by the demo. Missing known ETH/USD sources were added so the trust policy can rank them.'
+          : hasPinnedPriceCatalog
+            ? 'The resolver matched known ETH/USD sources; endpoint, signer, and provenance identities remain pinned by the demo.'
           : 'Parameters, provenance, signer, and payment requirements came from the resolver.',
         'success',
       );

@@ -34,7 +34,7 @@ Open the local URL printed by Vite and select **Trust-Aware Agent**. No API key 
 4. It calls the Airnode directly and verifies the request hash, response bytes, EIP-191 signature, signer, freshness, and normalized price.
 5. Only a verified value is released with a portable receipt.
 
-The resolver may return a retryable `503` during early access. After two bounded attempts, the demo uses its clearly labelled price catalog, still checks the selected Airnode's live document, and still verifies the live response.
+The resolver may return a retryable `503` during early access. After two bounded attempts, the demo uses its clearly labelled price catalog, still checks the selected Airnode's live document, and still verifies the live response. For known price operations, that catalog pins the endpoint, signer, and provenance so a resolver response cannot redefine a trusted source identity.
 
 The agent-ready prompt is [`site/public/prompts/trust-aware-agent.md`](../../site/public/prompts/trust-aware-agent.md). The framework-neutral tool contract is [`site/examples/agent-tool.json`](../../site/examples/agent-tool.json).
 
