@@ -1,12 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import {
-  Circle,
-  CircleMarker,
-  MapContainer,
-  Popup,
-  TileLayer,
-  useMap,
-} from 'react-leaflet';
+import Leaflet from 'leaflet';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LiveCallLoading, ProjectDetailFrame, VerificationStamp } from '../components/ProjectDetailFrame';
 import type { LiveSourceStatus } from '../components/ProjectDetailFrame';
 import { callVerifiedListing, downloadJson } from '../lib';
@@ -103,19 +96,124 @@ function markerColor(marker: EvidenceMarker): string {
   return '#607568';
 }
 
-function FitMapToEvidence({ markers }: { markers: EvidenceMarker[] }) {
-  const map = useMap();
+function markerPopup(marker: EvidenceMarker): HTMLElement {
+  const content = document.createElement('div');
+  const title = document.createElement('strong');
+  const detail = document.createElement('span');
+  content.className = 'leaflet-evidence-popup';
+  title.textContent = marker.title;
+  detail.textContent = `${marker.source} · ${Math.round(marker.distanceKm).toLocaleString()} km from Tokyo`;
+  content.append(title, detail);
+  return content;
+}
+
+function EvidenceLeafletMap({
+  markers,
+  selectedMarkerId,
+  onSelectMarker,
+}: {
+  markers: EvidenceMarker[];
+  selectedMarkerId: string | null;
+  onSelectMarker: (markerId: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<Leaflet.Map | null>(null);
+  const evidenceLayersRef = useRef<Leaflet.LayerGroup | null>(null);
+  const markerLayersRef = useRef(new Map<string, Leaflet.CircleMarker>());
 
   useEffect(() => {
-    if (!markers.length) return;
-    map.invalidateSize();
-    map.fitBounds(
-      markers.map((marker) => [marker.latitude, marker.longitude] as [number, number]),
-      { padding: [34, 34], maxZoom: 5 },
-    );
-  }, [map, markers]);
+    if (!containerRef.current) return;
 
-  return null;
+    const map = Leaflet.map(containerRef.current, {
+      minZoom: 2,
+      scrollWheelZoom: true,
+      worldCopyJump: true,
+    }).setView([35.689444444, 139.691666666], 3);
+    Leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    mapRef.current = map;
+    evidenceLayersRef.current = Leaflet.layerGroup().addTo(map);
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      evidenceLayersRef.current = null;
+      markerLayersRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const evidenceLayers = evidenceLayersRef.current;
+    if (!map || !evidenceLayers || !markers.length) return;
+
+    evidenceLayers.clearLayers();
+    markerLayersRef.current.clear();
+
+    const watchArea = markers.find((marker) => marker.kind === 'watch-area');
+    if (watchArea) {
+      Leaflet.circle([watchArea.latitude, watchArea.longitude], {
+        color: '#355b42',
+        dashArray: '6 7',
+        fillColor: '#355b42',
+        fillOpacity: 0.06,
+        radius: WATCH_RADIUS_KM * 1000,
+        weight: 1.5,
+      }).addTo(evidenceLayers);
+    }
+
+    for (const marker of markers) {
+      const selected = selectedMarkerId === marker.id;
+      const markerLayer = Leaflet.circleMarker(
+        [marker.latitude, marker.longitude],
+        {
+          color: 'white',
+          fillColor: markerColor(marker),
+          fillOpacity: 0.94,
+          opacity: 1,
+          radius: selected ? 10 : marker.alert ? 8 : 6,
+          weight: selected ? 3 : 2,
+        },
+      )
+        .bindPopup(markerPopup(marker))
+        .on('click', () => onSelectMarker(marker.id))
+        .addTo(evidenceLayers);
+      markerLayersRef.current.set(marker.id, markerLayer);
+    }
+
+    const resizeFrame = window.requestAnimationFrame(() => {
+      map.invalidateSize();
+      map.fitBounds(
+        Leaflet.latLngBounds(
+          markers.map((marker) => [marker.latitude, marker.longitude]),
+        ),
+        { padding: [34, 34], maxZoom: 5 },
+      );
+    });
+
+    return () => window.cancelAnimationFrame(resizeFrame);
+  }, [markers, onSelectMarker]);
+
+  useEffect(() => {
+    for (const marker of markers) {
+      const markerLayer = markerLayersRef.current.get(marker.id);
+      if (!markerLayer) continue;
+      const selected = selectedMarkerId === marker.id;
+      markerLayer.setRadius(selected ? 10 : marker.alert ? 8 : 6);
+      markerLayer.setStyle({ weight: selected ? 3 : 2 });
+    }
+  }, [markers, selectedMarkerId]);
+
+  return (
+    <div
+      aria-label="Verified disaster evidence map"
+      className="leaflet-evidence-map"
+      ref={containerRef}
+    />
+  );
 }
 
 export function DisasterEvidenceMapDetail() {
@@ -129,7 +227,6 @@ export function DisasterEvidenceMapDetail() {
   const selectedMarker = markers.find((marker) => marker.id === selectedMarkerId) ?? null;
   const selectedCall = calls.find((call) => call.spec.id === selectedMarker?.sourceId) ?? null;
   const alerts = markers.filter((marker) => marker.alert);
-  const watchArea = markers.find((marker) => marker.kind === 'watch-area') ?? null;
 
   const evidencePack = useMemo(() => calls.length !== 3 ? null : {
     schemaVersion: '1.0',
@@ -300,57 +397,11 @@ export function DisasterEvidenceMapDetail() {
         {calls.length === 3 && (
           <div className="evidence-map-layout" id="evidence">
             <div className="evidence-map">
-              <MapContainer
-                center={[35.689444444, 139.691666666]}
-                className="leaflet-evidence-map"
-                minZoom={2}
-                scrollWheelZoom
-                worldCopyJump
-                zoom={3}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  maxZoom={19}
-                  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <FitMapToEvidence markers={markers} />
-                {watchArea && (
-                  <Circle
-                    center={[watchArea.latitude, watchArea.longitude]}
-                    pathOptions={{
-                      color: '#355b42',
-                      dashArray: '6 7',
-                      fillColor: '#355b42',
-                      fillOpacity: 0.06,
-                      weight: 1.5,
-                    }}
-                    radius={WATCH_RADIUS_KM * 1000}
-                  />
-                )}
-                {markers.map((marker) => {
-                  const color = markerColor(marker);
-                  return (
-                    <CircleMarker
-                      center={[marker.latitude, marker.longitude]}
-                      eventHandlers={{ click: () => setSelectedMarkerId(marker.id) }}
-                      key={marker.id}
-                      pathOptions={{
-                        color: 'white',
-                        fillColor: color,
-                        fillOpacity: 0.94,
-                        opacity: 1,
-                        weight: selectedMarker?.id === marker.id ? 3 : 2,
-                      }}
-                      radius={selectedMarker?.id === marker.id ? 10 : marker.alert ? 8 : 6}
-                    >
-                      <Popup>
-                        <strong>{marker.title}</strong>
-                        <span>{marker.source} · {Math.round(marker.distanceKm).toLocaleString()} km from Tokyo</span>
-                      </Popup>
-                    </CircleMarker>
-                  );
-                })}
-              </MapContainer>
+              <EvidenceLeafletMap
+                markers={markers}
+                onSelectMarker={setSelectedMarkerId}
+                selectedMarkerId={selectedMarkerId}
+              />
               <div className={`map-alert-summary ${alerts.length ? 'has-alerts' : ''}`} role="status">
                 <i aria-hidden="true">{alerts.length ? '!' : '✓'}</i>
                 <span><strong>{alerts.length ? `${alerts.length} trusted alerts` : 'No events crossed the rule'}</strong><small>Derived only from {calls.length} verified receipts</small></span>

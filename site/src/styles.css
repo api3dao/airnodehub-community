@@ -2902,6 +2902,11 @@ footer {
   margin: 13px 15px;
 }
 
+.leaflet-evidence-popup {
+  display: grid;
+  gap: 5px;
+}
+
 .leaflet-evidence-map .leaflet-popup-content strong {
   font-size: 12px;
   line-height: 1.35;

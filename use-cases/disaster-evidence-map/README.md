@@ -35,7 +35,7 @@ Event calls → geofence → source receipts → alert evidence pack.
 
 The first implementation deliberately uses one location rule: a GeoDB-signed Tokyo point and a 1,500 km radius. It combines the latest active NASA EONET events with the largest recent USGS earthquakes and creates an alert only after all three inputs verify.
 
-The interactive map uses React Leaflet 5 with Leaflet 1.9.4 and OpenStreetMap tiles. Tile attribution remains visible inside the map. The library, tiles, and Airnode calls all run directly in the browser; there is no map proxy or application backend.
+The interactive map uses Leaflet 1.9.4 directly with OpenStreetMap tiles. Tile attribution remains visible inside the map. The library, tiles, and Airnode calls all run directly in the browser; there is no map proxy or application backend.
 
 ## Run it
 
