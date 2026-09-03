@@ -1,4 +1,4 @@
-import { SUPPORTED_LISTINGS } from './catalog';
+import { isPinnedPriceCandidate } from './catalog';
 import type {
   Candidate,
   CandidateDecision,
@@ -43,12 +43,12 @@ export function evaluateCandidates(
   const rejected: CandidateDecision[] = [];
 
   for (const candidate of unique.values()) {
-    if (!SUPPORTED_LISTINGS.has(candidate.listing)) {
+    if (!isPinnedPriceCandidate(candidate)) {
       rejected.push({
         listing: candidate.listing,
         provenance: candidate.attestation,
         status: 'rejected',
-        reason: 'This MVP has no price adapter for the listing.',
+        reason: 'This MVP has no pinned identity for the listing and operation.',
         rank: null,
         candidate,
       });
