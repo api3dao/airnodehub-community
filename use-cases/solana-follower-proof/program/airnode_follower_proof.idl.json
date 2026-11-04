@@ -1,0 +1,283 @@
+{
+  "address": "CnaPviA7GmMJx8JKzgCKCCA2iLn6cTfDj1ix6SEwDwjb",
+  "metadata": {
+    "name": "airnode_follower_proof",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "attest_followers",
+      "docs": [
+        "Records a follower count for `handle` once its Airnode signature, request, freshness and milestone all check out.",
+        "",
+        "`digest` must equal the digest the Airnode signed. It seeds the record account, which is what stops a replay.",
+        "`signature` is r ‖ s and `recovery_id` is the EIP-191 `v` minus 27."
+      ],
+      "discriminator": [
+        23,
+        216,
+        36,
+        1,
+        231,
+        177,
+        218,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "record",
+          "docs": [
+            "One account per signed message. `init` fails if it already exists, which rejects a replayed response."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "digest"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "digest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "handle",
+          "type": "string"
+        },
+        {
+          "name": "min_followers",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        },
+        {
+          "name": "signature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "recovery_id",
+          "type": "u8"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "FollowerAttestation",
+      "discriminator": [
+        22,
+        163,
+        120,
+        157,
+        175,
+        119,
+        185,
+        40
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "FollowersAttested",
+      "discriminator": [
+        52,
+        248,
+        55,
+        153,
+        121,
+        105,
+        220,
+        177
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidHandle",
+      "msg": "The handle must be 1 to 15 letters, digits or underscores"
+    },
+    {
+      "code": 6001,
+      "name": "UnexpectedData",
+      "msg": "The signed data is not a follower count in the expected form"
+    },
+    {
+      "code": 6002,
+      "name": "DigestMismatch",
+      "msg": "The digest does not match the request, timestamp and data"
+    },
+    {
+      "code": 6003,
+      "name": "HighS",
+      "msg": "The signature has a high s value"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidRecoveryId",
+      "msg": "The recovery id must be 0 or 1"
+    },
+    {
+      "code": 6005,
+      "name": "RecoveryFailed",
+      "msg": "No public key could be recovered from the signature"
+    },
+    {
+      "code": 6006,
+      "name": "WrongSigner",
+      "msg": "The response was not signed by the TwitterAPI.io Airnode for this request"
+    },
+    {
+      "code": 6007,
+      "name": "FromFuture",
+      "msg": "The signed timestamp is ahead of the cluster clock"
+    },
+    {
+      "code": 6008,
+      "name": "Stale",
+      "msg": "The signed response is too old"
+    },
+    {
+      "code": 6009,
+      "name": "BelowMilestone",
+      "msg": "The follower count is below the milestone"
+    }
+  ],
+  "types": [
+    {
+      "name": "FollowerAttestation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "request_hash",
+            "docs": [
+              "The request the Airnode answered, rebuilt from the handle."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "signed_at",
+            "docs": [
+              "When the Airnode signed the response, in Unix seconds."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "followers",
+            "type": "u64"
+          },
+          {
+            "name": "min_followers",
+            "type": "u64"
+          },
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "recorded_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "recorded_at",
+            "docs": [
+              "The cluster clock when the record was written."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FollowersAttested",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "handle",
+            "type": "string"
+          },
+          {
+            "name": "followers",
+            "type": "u64"
+          },
+          {
+            "name": "min_followers",
+            "type": "u64"
+          },
+          {
+            "name": "signed_at",
+            "type": "i64"
+          },
+          {
+            "name": "digest",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

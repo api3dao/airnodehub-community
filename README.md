@@ -6,7 +6,7 @@ This community workspace is open to everyone and maintained by API3. It is not a
 
 ## Architecture boundary
 
-This repository intentionally has no application backend. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser and performs EIP-191 verification locally. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
+This repository intentionally has no application backend. The one on-chain component, the Solana program behind [Follower Proof on Solana](use-cases/solana-follower-proof/README.md), is deployed to devnet and called from the browser by simulation. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser and performs EIP-191 verification locally. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
 
 ## Deployment
 
@@ -20,8 +20,9 @@ Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist
 | [Asset Price Monitor](use-cases/market-integrity-monitor/README.md) | Use Nodary as the first-party reference and compare verified relays against it. | Market data | Nodary, CoinGecko, TickerLayer | **Working** |
 | [Disaster Evidence Map](use-cases/disaster-evidence-map/README.md) | Attach signed event and location inputs to every marker and alert. | Public data | NASA EONET, USGS, GeoDB | **Working** |
 | [Verified Change Tracker](use-cases/revision-witness/README.md) | Compare two signed ETH/USD snapshots and retain the receipt behind each value. | Data history | Nodary | **Working** |
+| [Follower Proof on Solana](use-cases/solana-follower-proof/README.md) | Verify a signed X follower count inside a Solana program and reject tampered, stale, or replayed copies. | Cross-chain verification | TwitterAPI.io | **Working** |
 
-All four catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
+All five catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
 
 ## What belongs here
 
