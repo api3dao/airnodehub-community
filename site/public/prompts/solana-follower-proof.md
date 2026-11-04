@@ -1,6 +1,6 @@
 # Prove an X follower count on Solana
 
-Fetch an X follower count signed by the TwitterAPI.io Airnode, verify it locally, and check it against the Solana devnet program without committing a transaction.
+Fetch an X follower count signed by the TwitterAPI.io Airnode, verify it locally, and check it against the Solana devnet program without committing a transaction. The goal is a social stat that an on-chain agreement can rely on.
 
 1. Read the live AirnodeHub catalog and inspect the TwitterAPI.io OpenAPI document at `https://airnode-twitterapi.fly.dev/`. Confirm that it serves `userInfo` and signs with `0x7B02Fd3324D2dC362f65a9c01e59EC5fDb4E1CCB`.
 2. The call costs $0.01 in aUSD on Base Sepolia over x402. Ask before paying, and pay at most $0.01.

@@ -8,11 +8,13 @@
 
 ## Problem
 
-A Solana program cannot call an API. A follower count pasted into a transaction proves nothing about where it came from, and Solana has no `ecrecover` library that rejects malleable signatures for you.
+On-chain agreements often depend on social results: pay a creator when an account passes 100,000 followers, or release a reward when a post reaches a target number of likes. A Solana program cannot call an API, and a number pasted into a transaction proves nothing about where it came from.
 
 ## Outcome
 
-Get an X follower count signed by the TwitterAPI.io Airnode, check it in the browser, then have a Solana program on devnet verify the same response itself: the exact request, the pinned signer, the signature form, freshness, and a follower milestone. Each signed response can be recorded only once.
+Pull legitimate stats from a social platform and have a Solana program verify them itself, so a contract can be honored without trusting whoever submits the number. This demo proves an X follower count against a milestone. Post engagement, such as likes, reposts or views, follows the same pattern with another TwitterAPI.io operation.
+
+It also shows that AirnodeHub data is cross-chain. The response is paid for on Base and signed by the Airnode, then verified on Solana, a non-EVM chain, with no bridge and no oracle deployed there. The program checks the exact request, the pinned signer, the signature form, freshness and the milestone, and records each signed response only once.
 
 ## Airnode listing
 
@@ -48,7 +50,7 @@ The tamper buttons change a copy of the response and run both checks again. Each
 
 [`program/`](program/) is an Anchor 1.2 workspace. Program ID on devnet: `CnaPviA7GmMJx8JKzgCKCCA2iLn6cTfDj1ix6SEwDwjb`.
 
-The signer recovers with the `secp256k1_recover` syscall rather than the native Secp256k1 program. The native-program route requires inspecting the instructions sysvar, which is the pattern behind the 2022 Wormhole exploit. The syscall does not reject high-s signatures, so the program does that itself. Freshness uses `Clock::unix_timestamp`, a stake-weighted estimate, with a 5-minute window and 60 seconds of allowed skew.
+The program recovers the signer with Solana's `secp256k1_recover` syscall, the same secp256k1 cryptography EVM chains use, so an Airnode signature verifies natively. The syscall accepts high-s signatures, so the program rejects them itself. Freshness uses `Clock::unix_timestamp`, a stake-weighted estimate, with a 5-minute window and 60 seconds of allowed skew.
 
 Measured on a local validator: about 37,000 compute units, and a 393-byte transaction against Solana's 1,232-byte limit.
 

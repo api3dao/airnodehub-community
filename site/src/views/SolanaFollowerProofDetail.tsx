@@ -183,9 +183,9 @@ export function SolanaFollowerProofDetail() {
   return (
     <ProjectDetailFrame
       title="Follower Proof on Solana"
-      tagline="Check a signed X follower count inside a Solana program, and watch it refuse every tampered copy."
-      problem="Solana programs cannot call an API, and a follower count pasted into a transaction proves nothing about where it came from."
-      outcome="A TwitterAPI.io response signed by its Airnode is verified by a Solana program on devnet: exact request, pinned signer, low-s signature, freshness and milestone, with each signed response recordable only once."
+      tagline="Bring verified social stats on-chain. An X follower count signed by an Airnode is checked by a Solana program, so a contract can act on it."
+      problem="On-chain agreements often depend on social results, like a follower milestone or engagement on a post. A Solana program cannot call an API, and a number pasted into a transaction proves nothing."
+      outcome="A Solana program verifies the signed count itself, so a contract can be honored without trusting the submitter. The data is paid for on Base and verified on Solana: AirnodeHub works across chains, including non-EVM ones."
       boundary="TwitterAPI.io relays X data it does not own. The signature proves what that Airnode returned and when, not that X or the account owner vouches for the count."
       prompt={{
         path: '/prompts/solana-follower-proof.md',
@@ -196,8 +196,8 @@ export function SolanaFollowerProofDetail() {
       <section className="live-demo-heading" id="live-demo" aria-labelledby="sfp-demo-title">
         <h2 id="sfp-demo-title">Verify a follower count on Solana devnet</h2>
         <p>
-          Get a signed count, check it in your browser, then run the real program on Solana devnet. Devnet runs it as a
-          simulation, so no Solana wallet or SOL is needed and nothing is written.
+          Get a count signed by the TwitterAPI.io Airnode, check it in your browser, then run the real program on Solana
+          devnet. Devnet runs it as a simulation, so no Solana wallet or SOL is needed and nothing is written.
         </p>
       </section>
 

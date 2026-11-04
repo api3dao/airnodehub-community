@@ -39,6 +39,6 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     title: 'Follower Proof on Solana',
     listings: ['TwitterAPI.io'],
     outcome:
-      'Verify a signed X follower count inside a Solana program and reject tampered, stale, or replayed copies.',
+      'Bring verified social stats, such as an X follower count, into a Solana program so on-chain agreements can be settled on them.',
   },
 ] as const;

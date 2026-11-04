@@ -24,7 +24,7 @@ CI builds and tests only `site/`. The Solana program is built and tested separat
 | [Asset Price Monitor](use-cases/market-integrity-monitor/README.md) | Use Nodary as the first-party reference and compare verified relays against it. | Market data | Nodary, CoinGecko, TickerLayer | **Working** |
 | [Disaster Evidence Map](use-cases/disaster-evidence-map/README.md) | Attach signed event and location inputs to every marker and alert. | Public data | NASA EONET, USGS, GeoDB | **Working** |
 | [Verified Change Tracker](use-cases/revision-witness/README.md) | Compare two signed ETH/USD snapshots and retain the receipt behind each value. | Data history | Nodary | **Working** |
-| [Follower Proof on Solana](use-cases/solana-follower-proof/README.md) | Verify a signed X follower count inside a Solana program and reject tampered, stale, or replayed copies. | Cross-chain verification | TwitterAPI.io | **Working** |
+| [Follower Proof on Solana](use-cases/solana-follower-proof/README.md) | Bring verified social stats, such as an X follower count, into a Solana program so on-chain agreements can be settled on them. | Cross-chain verification | TwitterAPI.io | **Working** |
 
 All five catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
 
