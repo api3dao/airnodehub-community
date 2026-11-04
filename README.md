@@ -8,9 +8,13 @@ This community workspace is open to everyone and maintained by API3. It is not a
 
 This repository intentionally has no application backend. The one on-chain component, the Solana program behind [Follower Proof on Solana](use-cases/solana-follower-proof/README.md), is deployed to devnet and called from the browser by simulation. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser and performs EIP-191 verification locally. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
 
+Paid operations are never called automatically. Every demo runs without payment. Follower Proof on Solana keeps a live x402 call as an optional reference module that loads and pays only after the visitor connects a wallet and clicks, capped at $0.01 in test aUSD.
+
 ## Deployment
 
 Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist` to the `airnodehub-community-preview` Cloudflare Pages project. Each pull request from a branch in this repository receives its own temporary `airnodehub-community-pr-<number>` Pages project and one automatically updated preview comment. Closing or merging the pull request deletes that project and marks the preview as deleted. Fork pull requests run the checks but skip deployment so Cloudflare credentials are never exposed to untrusted code. The workflows require a `CLOUDFLARE_API_TOKEN` repository secret scoped to Cloudflare Pages Edit and a `CLOUDFLARE_ACCOUNT_ID` repository variable. Because Pages tokens are account-scoped, use a preview-only Cloudflare account for strict production isolation.
+
+CI builds and tests only `site/`. The Solana program is built and tested separately with Anchor and LiteSVM; see [its README](use-cases/solana-follower-proof/README.md#verify-it).
 
 ## Use-case catalog
 

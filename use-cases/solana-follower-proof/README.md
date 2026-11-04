@@ -105,6 +105,22 @@ PAYER_PRIVATE_KEY=0x... node scripts/capture-solana-follower-fixture.mjs API3DAO
 - Recorded and live responses are labelled as such.
 - The downloaded record reproduces both verdicts from its own contents.
 
+## Devnet deployment
+
+The program is deployed to Solana devnet as an upgradeable program. Its upgrade authority is a contributor-held devnet key. To own the deployment, redeploy from `program/` with your own keypair, or ask for the upgrade authority to be transferred.
+
+CI builds and tests only `site/`. Run the program tests locally with the commands above. They need the Agave CLI and Anchor 1.2.
+
 ## Scope
 
 The page simulates the transaction and never sends one. Recording a count on-chain requires a Solana wallet to pay rent for the record account, and that is left to the program's tests and to integrators. This program is a demonstration and has not been audited.
+
+## References
+
+- [AirnodeHub catalogue](https://airnodehub.api3.org/llms.txt)
+- [Attestation algorithm](https://airnodehub-docs.api3.org/airnode/attestation)
+- [Program on Solana Explorer (devnet)](https://explorer.solana.com/address/CnaPviA7GmMJx8JKzgCKCCA2iLn6cTfDj1ix6SEwDwjb?cluster=devnet)
+
+## License
+
+MIT. The recorded follower count is X data relayed by TwitterAPI.io and is included only as a test fixture.
