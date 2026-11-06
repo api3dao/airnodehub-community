@@ -28,31 +28,37 @@ Projected request → signed count → browser check → Solana program check �
 
 ## Implemented flow
 
-1. **Discover.** The page reads the Airnode's live OpenAPI document and confirms it still names the pinned signer and serves `userInfo`.
-2. **Evaluate.** The call is priced. The demo runs free on a recorded response by default. Paying is an optional reference module (see below): the page pays only after you open it, connect a wallet and press the pay button, and never more than $0.01 per click.
-3. **Call.** It asks for `userInfo` with the projection `{"followers":"/data/followers"}`. The Airnode then signs only the text `{"followers":N}`, which a Solana program can read without a JSON parser.
-4. **Verify locally.** The browser runs the program's checks in the program's order.
-5. **Verify on Solana.** The browser simulates `attest_followers` against the deployed devnet program. The cluster runs the real program with its real clock and accounts and then discards the result, so no Solana wallet or SOL is needed.
-6. **Preserve.** Download a record with the request, signed response, payment settlement, browser checks and program logs.
+1. Read the TwitterAPI.io Airnode's live OpenAPI document and expected signer.
+2. Load a recorded signed follower count, or optionally pay $0.01 for a fresh one.
+3. Ask the Airnode to sign only the follower count, so the Solana program can read it easily.
+4. Verify the response in the browser.
+5. Run the same response through the Solana program on devnet as a simulation, with no Solana wallet needed.
+6. Try tampered copies and see the program reject each one.
+7. Export a record with the request, signed response, browser checks and program result.
 
-The tamper buttons change a copy of the response and run both checks again. Each case has an expected program error:
-
-| Change | Program error |
+| Tampered copy | Program result |
 |---|---|
-| Inflate the signed count | `WrongSigner`: the signature recovers some other key |
-| Claim a different handle | `WrongSigner`: the program rebuilds the request hash from the handle |
-| Swap in the high-s twin of the signature | `HighS` |
-| Ask for one more follower than were signed | `BelowMilestone` |
-| Submit a response older than 5 minutes | `Stale` |
-| Submit the same signed response twice | the record account already exists |
+| Inflate the follower count | Rejected: `WrongSigner` |
+| Claim a different account | Rejected: `WrongSigner` |
+| Use the other valid form of the signature | Rejected: `HighS` |
+| Ask for more followers than were signed | Rejected: `BelowMilestone` |
+| Submit a response older than 5 minutes | Rejected: `Stale` |
+| Submit the same response twice | Rejected: already recorded |
 
 ## The program
 
-[`program/`](program/) is an Anchor 1.2 workspace. Program ID on devnet: `CnaPviA7GmMJx8JKzgCKCCA2iLn6cTfDj1ix6SEwDwjb`.
+[`program/`](program/) is an Anchor workspace. It is deployed on devnet as `CnaPviA7GmMJx8JKzgCKCCA2iLn6cTfDj1ix6SEwDwjb`.
 
-The program recovers the signer with Solana's `secp256k1_recover` syscall, the same secp256k1 cryptography EVM chains use, so an Airnode signature verifies natively. The syscall accepts high-s signatures, so the program rejects them itself. Freshness uses `Clock::unix_timestamp`, a stake-weighted estimate, with a 5-minute window and 60 seconds of allowed skew.
+It checks that the response:
 
-Measured on a local validator: about 37,000 compute units, and a 393-byte transaction against Solana's 1,232-byte limit.
+- answers the exact request for that account;
+- is signed by the TwitterAPI.io Airnode;
+- uses the standard form of the signature;
+- was signed within the last 5 minutes;
+- meets the follower milestone;
+- has not been recorded before.
+
+Solana uses the same signature cryptography as EVM chains, so the program can check an Airnode signature directly. One check costs about 37,000 compute units and fits in a single transaction.
 
 ## Run it
 
@@ -64,35 +70,35 @@ pnpm dev
 
 Open `http://localhost:5173/?project=solana-follower-proof`.
 
-**Recorded** mode is the default and is free. It loads a real signed response captured earlier. Its signature is genuine, but it is older than the 5-minute window, so the program rejects it as `Stale`. That is the expected result.
+**Recorded** mode is the default and is free. It loads a real signed response saved in the repo. Because it is older than 5 minutes, the program rejects it as `Stale`. That is expected; every other check still runs.
 
 ### Optional: live paid calls (reference module)
 
-A fresh response needs an x402 payment. Costs $0.01 per call in aUSD on Base Sepolia. The demo does not depend on this. The **Live (optional, paid)** mode is kept as a reference for calling a priced Airnode operation from a browser:
+A fresh response needs an x402 payment. Costs $0.01 per call in aUSD on Base Sepolia. The demo works without it; **Live (optional, paid)** mode is a reference for paying for an Airnode call from a browser.
 
-- [`site/src/views/SolanaFollowerProofLiveCall.tsx`](../../site/src/views/SolanaFollowerProofLiveCall.tsx): the UI. It is lazy-loaded, so the wallet and x402 code is downloaded only when someone opens Live mode.
-- [`site/src/lib/browserPayment.ts`](../../site/src/lib/browserPayment.ts): wallet connection and an x402 fetch limited to aUSD, at most $0.01, one payment per click.
-- [`site/scripts/capture-solana-follower-fixture.mjs`](../../site/scripts/capture-solana-follower-fixture.mjs): the same payment from Node with a private key, used to record the fixture.
+- [`SolanaFollowerProofLiveCall.tsx`](../../site/src/views/SolanaFollowerProofLiveCall.tsx): the Live mode screen. It only loads when someone opens Live mode.
+- [`browserPayment.ts`](../../site/src/lib/browserPayment.ts): connects the wallet and pays, at most $0.01 per click.
+- [`capture-solana-follower-fixture.mjs`](../../site/scripts/capture-solana-follower-fixture.mjs): the same payment from Node, used to record the saved response.
 
-Live mode needs a browser wallet on Base Sepolia holding test aUSD from the [faucet](https://airnodehub.api3.org/faucet). aUSD has no real value, and the x402 facilitator settles the payment, so no ETH is needed.
+You need a Base Sepolia wallet with test aUSD from the [faucet](https://airnodehub.api3.org/faucet). aUSD has no real value, and no ETH is needed.
 
 To point the page at a local validator running the same program, start `pnpm dev` with `VITE_SOLANA_RPC_URL=http://127.0.0.1:8899`.
 
 ## Verify it
 
 ```sh
-# Browser checks, encoding and error mapping
+# Site tests
 cd site && pnpm test
 
-# Program: build, then run LiteSVM tests against the recorded fixture
+# Program tests
 cd use-cases/solana-follower-proof/program
 anchor build
 cargo test
 ```
 
-The program tests run the compiled program against the shared fixture, [`site/public/fixtures/twitterapi-userinfo-followers.json`](../../site/public/fixtures/twitterapi-userinfo-followers.json). They cover acceptance and storage, replay, an edited count, a different request, stale and future timestamps, the milestone, the high-s twin, a foreign signer and malformed input.
+Both test suites use the same [saved response](../../site/public/fixtures/twitterapi-userinfo-followers.json). The program tests cover a valid response, every tamper case above, a future timestamp, a different signer and bad input.
 
-To record a new fixture, which costs $0.01 in test aUSD:
+To record a new response ($0.01 in test aUSD):
 
 ```sh
 cd site
@@ -101,21 +107,21 @@ PAYER_PRIVATE_KEY=0x... node scripts/capture-solana-follower-fixture.mjs API3DAO
 
 ## Acceptance
 
-- A response is shown as accepted only when the browser checks and the devnet program both accept it.
-- Every tamper case is rejected by the program with the error listed above.
-- No payment happens without an explicit click, and never more than $0.01 per click.
-- Recorded and live responses are labelled as such.
-- The downloaded record reproduces both verdicts from its own contents.
+- A response counts as accepted only when the browser and the program both accept it.
+- The program rejects every tampered copy with the error listed above.
+- Nothing is paid without a click, and never more than $0.01 per click.
+- Recorded and live responses are clearly labelled.
+- The exported record contains everything needed to check both results again.
 
 ## Devnet deployment
 
-The program is deployed to Solana devnet as an upgradeable program. Its upgrade authority is a contributor-held devnet key. To own the deployment, redeploy from `program/` with your own keypair, or ask for the upgrade authority to be transferred.
+The program can be upgraded by a contributor-held devnet key. To take it over, redeploy from `program/` with your own key, or ask for the upgrade key to be transferred.
 
-CI builds and tests only `site/`. Run the program tests locally with the commands above. They need the Agave CLI and Anchor 1.2.
+CI only tests `site/`. Run the program tests locally; they need the Solana CLI and Anchor 1.2.
 
 ## Scope
 
-The page simulates the transaction and never sends one. Recording a count on-chain requires a Solana wallet to pay rent for the record account, and that is left to the program's tests and to integrators. This program is a demonstration and has not been audited.
+The page simulates the program and never sends a transaction. Actually recording a count needs a Solana wallet to pay for the record, which is left to integrators. The program is a demonstration and has not been audited.
 
 ## References
 
