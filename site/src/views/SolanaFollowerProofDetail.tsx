@@ -273,7 +273,7 @@ export function SolanaFollowerProofDetail() {
                 <span>@{run.handle} · {run.variant === 'original' ? (captured.mode === 'live' ? 'live response' : 'recorded response') : 'tampered copy'}</span>
                 <strong>{formatCount(followers)} followers</strong>
                 <small>
-                  Signed {new Date(Number(run.attestation.timestamp) * 1000).toLocaleString()} by {TWITTER_AIRNODE.name} · relay-signed ·
+                  Signed {new Date(Number(run.attestation.timestamp) * 1000).toLocaleString()} by {TWITTER_AIRNODE.name} ·
                   milestone {formatCount(run.minFollowers)}
                 </small>
               </div>

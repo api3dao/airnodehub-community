@@ -18,13 +18,13 @@ It also shows that AirnodeHub data is cross-chain. The response is paid for on B
 
 ## Airnode listing
 
-- TwitterAPI.io: `userInfo`, relay-signed by `0x7B02Fd3324D2dC362f65a9c01e59EC5fDb4E1CCB`. Costs $0.01 per call in aUSD on Base Sepolia.
+- TwitterAPI.io: `userInfo`.
 
 TwitterAPI.io relays X data it does not own. Its attestation proves which bytes that Airnode returned for which request and when. It does not prove that X or the account owner vouches for the count.
 
 ## Trust pattern
 
-Projected request → relay-signed count → browser check → Solana program check → one record per signed digest.
+Projected request → signed count → browser check → Solana program check → one record per signed digest.
 
 ## Implemented flow
 
@@ -68,7 +68,7 @@ Open `http://localhost:5173/?project=solana-follower-proof`.
 
 ### Optional: live paid calls (reference module)
 
-Every TwitterAPI.io operation is priced at $0.01, so a fresh response needs an x402 payment. The demo does not depend on this. The **Live (optional, paid)** mode is kept as a reference for calling a priced Airnode operation from a browser:
+A fresh response needs an x402 payment. Costs $0.01 per call in aUSD on Base Sepolia. The demo does not depend on this. The **Live (optional, paid)** mode is kept as a reference for calling a priced Airnode operation from a browser:
 
 - [`site/src/views/SolanaFollowerProofLiveCall.tsx`](../../site/src/views/SolanaFollowerProofLiveCall.tsx): the UI. It is lazy-loaded, so the wallet and x402 code is downloaded only when someone opens Live mode.
 - [`site/src/lib/browserPayment.ts`](../../site/src/lib/browserPayment.ts): wallet connection and an x402 fetch limited to aUSD, at most $0.01, one payment per click.
