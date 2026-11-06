@@ -10,7 +10,6 @@ import {
   attestArguments,
   checkAsProgram,
   explorerUrl,
-  followerRequest,
   highSTwin,
   parseFollowers,
   simulateOnDevnet,
@@ -388,11 +387,12 @@ export function SolanaFollowerProofDetail() {
       <section className="live-demo-heading sfp-how" aria-labelledby="sfp-how-title">
         <h2 id="sfp-how-title">What the program checks</h2>
         <ol>
-          <li><strong>The exact request.</strong> It rebuilds the request hash from the handle, so a response for any other account or query cannot pass.</li>
-          <li><strong>The signed bytes.</strong> It reads the count from <code>{'{"followers":N}'}</code>, the projection requested as <code>{JSON.stringify(followerRequest('handle').responseProjection)}</code>.</li>
-          <li><strong>The signer.</strong> <code>secp256k1_recover</code> must return the pinned Airnode address <code>{TWITTER_AIRNODE.address}</code>, after refusing high-s signatures that the syscall would otherwise accept.</li>
-          <li><strong>Freshness.</strong> The signed time must be within {MAX_AGE_SECONDS / 60} minutes of the cluster clock.</li>
-          <li><strong>One use.</strong> Each signed response creates one account derived from its digest. Submitting it again fails because that account exists.</li>
+          <li><strong>The right request.</strong> The response answers the exact question asked: the follower count for this account.</li>
+          <li><strong>The right signer.</strong> It was signed by the {TWITTER_AIRNODE.name} Airnode, whose address is built into the program.</li>
+          <li><strong>An untouched response.</strong> Changing the count, the account or the time after signing breaks the signature.</li>
+          <li><strong>Fresh data.</strong> It was signed within the last {MAX_AGE_SECONDS / 60} minutes, by Solana's own clock.</li>
+          <li><strong>The milestone.</strong> The count meets the number of followers you asked for.</li>
+          <li><strong>One use only.</strong> Each signed response can be recorded once, so the same proof cannot be claimed twice.</li>
         </ol>
       </section>
     </ProjectDetailFrame>

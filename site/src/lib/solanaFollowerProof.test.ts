@@ -6,6 +6,7 @@ import {
   checkAsProgram,
   encodeAttestFollowers,
   followerRequestHash,
+  formatAge,
   highSTwin,
   MAX_AGE_SECONDS,
   MAX_FUTURE_SKEW_SECONDS,
@@ -141,5 +142,18 @@ describe('Solana instruction encoding', () => {
     expect(
       programErrorFromLogs(['Allocate: account Address { address: X, base: None } already in use'], null),
     ).toBe('AlreadyRecorded');
+  });
+});
+
+describe('Solana follower proof age wording', () => {
+  it('describes the age in plain words', () => {
+    expect(formatAge(0)).toBe('0 seconds ago');
+    expect(formatAge(1)).toBe('1 second ago');
+    expect(formatAge(12)).toBe('12 seconds ago');
+    expect(formatAge(240)).toBe('4 minutes ago');
+    expect(formatAge(3_600)).toBe('1 hour ago');
+    expect(formatAge(160_966)).toBe('1 day ago');
+    expect(formatAge(2 * 86_400 + 5)).toBe('2 days ago');
+    expect(formatAge(Number.NaN)).toBe('at an unknown time');
   });
 });

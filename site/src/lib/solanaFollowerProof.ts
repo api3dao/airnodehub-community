@@ -272,7 +272,7 @@ export async function checkAsProgram({
   step(
     'fresh',
     !fromFuture && !stale,
-    fromFuture ? PROGRAM_ERROR_MESSAGES.FromFuture : `Signed ${ageSeconds}s ago`,
+    fromFuture ? PROGRAM_ERROR_MESSAGES.FromFuture : `Signed ${formatAge(ageSeconds)}`,
     fromFuture ? 'FromFuture' : 'Stale',
   );
 
@@ -352,6 +352,18 @@ export function encodeAttestFollowers(args: AttestArguments): Uint8Array {
     rs,
     new Uint8Array([recoveryId]),
   ]);
+}
+
+// Plain-language age for the freshness check: "12 seconds ago", "4 minutes ago", "2 days ago"
+export function formatAge(seconds: number): string {
+  if (!Number.isFinite(seconds)) return 'at an unknown time';
+  const units: Array<[string, number]> = [['day', 86_400], ['hour', 3_600], ['minute', 60], ['second', 1]];
+  const s = Math.max(0, Math.floor(seconds));
+  for (const [name, size] of units) {
+    const count = Math.floor(s / size);
+    if (count >= 1 || size === 1) return `${count} ${name}${count === 1 ? '' : 's'} ago`;
+  }
+  return 'just now';
 }
 
 // The account that records one signed message. Creating it a second time fails, which is the replay protection.
