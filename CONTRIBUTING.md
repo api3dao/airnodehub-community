@@ -47,7 +47,7 @@ Update the UI catalog and README inventory in the same pull request. A Planned b
 ## Use-case acceptance checklist
 
 - [ ] The project runs locally from documented commands.
-- [ ] It is a static frontend demonstration with no backend, proxy, database, secret, serverless function, webhook, or worker.
+- [ ] It is a static frontend demonstration with no backend, proxy, database, secret, serverless function, webhook, or worker. An on-chain verifier is allowed when it runs on a public testnet, its source and tests live in the use case, and the site calls it without a secret.
 - [ ] It uses a currently published AirnodeHub operation.
 - [ ] It shows discover → evaluate → call → verify → preserve evidence.
 - [ ] Live and recorded-fixture modes are clearly distinguished.

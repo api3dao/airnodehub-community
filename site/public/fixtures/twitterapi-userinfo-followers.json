@@ -1,0 +1,29 @@
+{
+  "description": "A real TwitterAPI.io userInfo response projected to the follower count, as signed by its Airnode. Shared by the site and the Solana program tests.",
+  "capturedAt": "2026-11-04T21:06:41.801Z",
+  "source": {
+    "listing": "TwitterAPI.io",
+    "url": "https://airnode-twitterapi.fly.dev/",
+    "signer": "0x7B02Fd3324D2dC362f65a9c01e59EC5fDb4E1CCB"
+  },
+  "request": {
+    "operation": "userInfo",
+    "parameters": {
+      "userName": "API3DAO"
+    },
+    "responseProjection": {
+      "followers": "/data/followers"
+    }
+  },
+  "response": {
+    "airnode": "0x7B02Fd3324D2dC362f65a9c01e59EC5fDb4E1CCB",
+    "requestHash": "0x8814cd475c71e9684ea18fb016b15258719ce458b52ca0cb58a55353d349302a",
+    "timestamp": "1793826401",
+    "data": "{\"followers\":68113}",
+    "signature": "0xd3fedc2525c4915c77d46434beabc21f24c0c1b9373fed60970311c7b00b93512cfb676b936af28a47b23aea50df6fd343ca740f02bab29d99a43e4fdae4b4a31c"
+  },
+  "payment": {
+    "network": "eip155:84532",
+    "transaction": "0x7dea1e2884200b47163b027d2969be0796867ddfebde953b6939bd605d10c12f"
+  }
+}

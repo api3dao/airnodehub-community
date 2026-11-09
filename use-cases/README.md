@@ -8,6 +8,7 @@ The community interface and this directory describe the same project inventory.
 | [Asset Price Monitor](market-integrity-monitor/README.md) | **Working** | Market data | Nodary, CoinGecko, TickerLayer | Live reference-price dashboard |
 | [Disaster Evidence Map](disaster-evidence-map/README.md) | **Working** | Public data | NASA EONET, USGS, GeoDB | Live evidence map |
 | [Verified Change Tracker](revision-witness/README.md) | **Working** | Data history | Nodary | Signed price change record |
+| [Follower Proof on Solana](solana-follower-proof/README.md) | **Working** | Cross-chain verification | TwitterAPI.io | Solana devnet program and browser demo |
 
 Every entry opens from the shared catalog and retains the complete signed inputs behind its derived result.
 

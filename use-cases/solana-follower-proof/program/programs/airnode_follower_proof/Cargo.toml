@@ -1,0 +1,42 @@
+[package]
+name = "airnode_follower_proof"
+version = "0.1.0"
+description = "Created with Anchor"
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "airnode_follower_proof"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+
+[dependencies]
+anchor-lang = "1.2.2"
+solana-keccak-hasher = "3.1.0"
+solana-secp256k1-recover = "3.3.1"
+
+[dev-dependencies]
+# Cargo.lock pins LiteSVM's Rust-1.89-compatible dependency graph.
+litesvm = "0.15.0"
+solana-message = "4"
+solana-transaction = "4"
+solana-signer = "3"
+solana-keypair = "3"
+k256 = { version = "0.14.0", features = ["ecdsa"] }
+serde_json = "1.0.154"
+solana-transaction-error = "3.4.0"
+solana-instruction-error = "2.5.0"
+
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

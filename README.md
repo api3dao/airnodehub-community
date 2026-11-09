@@ -6,11 +6,15 @@ This community workspace is open to everyone and maintained by API3. It is not a
 
 ## Architecture boundary
 
-This repository intentionally has no application backend. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser and performs EIP-191 verification locally. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
+This repository intentionally has no application backend. The one on-chain component, the Solana program behind [Follower Proof on Solana](use-cases/solana-follower-proof/README.md), is deployed to devnet and called from the browser by simulation. The static Vite app in [`site/`](site/) calls public AirnodeHub and Airnode endpoints directly from the browser and performs EIP-191 verification locally. It does not contain a proxy, database, serverless function, secret API key, account system, webhook, or background worker. The production artifact is static and can be deployed to Cloudflare Pages or another static host.
+
+Paid operations are never called automatically. Every demo runs without payment. Follower Proof on Solana keeps a live x402 call as an optional reference module that loads and pays only after the visitor connects a wallet and clicks, capped at $0.01 in test aUSD.
 
 ## Deployment
 
 Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist` to the `airnodehub-community-preview` Cloudflare Pages project. Each pull request from a branch in this repository receives its own temporary `airnodehub-community-pr-<number>` Pages project and one automatically updated preview comment. Closing or merging the pull request deletes that project and marks the preview as deleted. Fork pull requests run the checks but skip deployment so Cloudflare credentials are never exposed to untrusted code. The workflows require a `CLOUDFLARE_API_TOKEN` repository secret scoped to Cloudflare Pages Edit and a `CLOUDFLARE_ACCOUNT_ID` repository variable. Because Pages tokens are account-scoped, use a preview-only Cloudflare account for strict production isolation.
+
+CI builds and tests only `site/`. The Solana program is built and tested separately with Anchor and LiteSVM; see [its README](use-cases/solana-follower-proof/README.md#verify-it).
 
 ## Use-case catalog
 
@@ -20,8 +24,9 @@ Every push to `main` runs tests, builds [`site/`](site/), and deploys `site/dist
 | [Asset Price Monitor](use-cases/market-integrity-monitor/README.md) | Use Nodary as the first-party reference and compare verified relays against it. | Market data | Nodary, CoinGecko, TickerLayer | **Working** |
 | [Disaster Evidence Map](use-cases/disaster-evidence-map/README.md) | Attach signed event and location inputs to every marker and alert. | Public data | NASA EONET, USGS, GeoDB | **Working** |
 | [Verified Change Tracker](use-cases/revision-witness/README.md) | Compare two signed ETH/USD snapshots and retain the receipt behind each value. | Data history | Nodary | **Working** |
+| [Follower Proof on Solana](use-cases/solana-follower-proof/README.md) | Bring verified social stats, such as an X follower count, into a Solana program so on-chain agreements can be settled on them. | Cross-chain verification | TwitterAPI.io | **Working** |
 
-All four catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
+All five catalog entries are runnable from the shared browser app. Future ideas remain in [`IDEAS.md`](IDEAS.md).
 
 ## What belongs here
 

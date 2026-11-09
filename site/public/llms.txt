@@ -12,6 +12,7 @@ An Airnode attestation proves which signer returned specific bytes for a specifi
 - [Asset Price Monitor](https://airnodehub-community-preview.pages.dev/?project=market-integrity-monitor): Use first-party Nodary as the reference and compare verified relay prices without losing their receipts. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/market-integrity-monitor.md).
 - [Disaster Evidence Map](https://airnodehub-community-preview.pages.dev/?project=disaster-evidence-map): Attach signed event and location inputs to map markers and alerts. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/disaster-evidence-map.md).
 - [Verified Change Tracker](https://airnodehub-community-preview.pages.dev/?project=revision-witness): Compare two signed ETH/USD snapshots over time and preserve the receipt behind each value. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/revision-witness.md).
+- [Follower Proof on Solana](https://airnodehub-community-preview.pages.dev/?project=solana-follower-proof): Bring an X follower count signed by the TwitterAPI.io Airnode into a Solana devnet program so on-chain agreements can be settled on it. Shows AirnodeHub data paid for on Base and verified on Solana, with tampered, stale and replayed copies rejected. [Agent prompt](https://airnodehub-community-preview.pages.dev/prompts/solana-follower-proof.md).
 
 ## Project resources
 

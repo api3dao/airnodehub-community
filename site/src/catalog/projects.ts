@@ -34,4 +34,11 @@ export const CATALOG_PROJECTS: readonly CatalogProject[] = [
     outcome:
       'Compare two signed ETH/USD snapshots and preserve the receipt behind each value.',
   },
+  {
+    slug: 'solana-follower-proof',
+    title: 'Follower Proof on Solana',
+    listings: ['TwitterAPI.io'],
+    outcome:
+      'Bring verified social stats, such as an X follower count, into a Solana program so on-chain agreements can be settled on them.',
+  },
 ] as const;

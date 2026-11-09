@@ -1,8 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { CatalogView } from './views/CatalogView';
 import { DisasterEvidenceMapDetail } from './views/DisasterEvidenceMapDetail';
 import { MarketIntegrityMonitorDetail } from './views/MarketIntegrityMonitorDetail';
 import { RevisionWitnessDetail } from './views/RevisionWitnessDetail';
 import { TrustAwareAgentDetail } from './views/TrustAwareAgentDetail';
+
+// Loaded on demand so the Solana and x402 libraries stay out of the other pages
+const SolanaFollowerProofDetail = lazy(() =>
+  import('./views/SolanaFollowerProofDetail').then((module) => ({ default: module.SolanaFollowerProofDetail })),
+);
 
 const REPO_URL = 'https://github.com/api3dao/airnodehub-community';
 const AIRNODEHUB_URL = 'https://airnodehub.api3.org/';
@@ -34,6 +40,7 @@ export default function App() {
     'market-integrity-monitor',
     'disaster-evidence-map',
     'revision-witness',
+    'solana-follower-proof',
   ].includes(projectSlug ?? '');
 
   return (
@@ -67,6 +74,11 @@ export default function App() {
       {projectSlug === 'market-integrity-monitor' && <MarketIntegrityMonitorDetail />}
       {projectSlug === 'disaster-evidence-map' && <DisasterEvidenceMapDetail />}
       {projectSlug === 'revision-witness' && <RevisionWitnessDetail />}
+      {projectSlug === 'solana-follower-proof' && (
+        <Suspense fallback={<main className="project-page" aria-busy="true" />}>
+          <SolanaFollowerProofDetail />
+        </Suspense>
+      )}
       {!isCatalog && !knownProject && (
         <main className="project-not-found">
           <span>Project not found</span>
